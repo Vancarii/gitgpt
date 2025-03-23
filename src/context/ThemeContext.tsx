@@ -22,6 +22,9 @@ interface ThemeContextType {
     buttonText: string;
     inputBackground: string;
   };
+  fonts: {
+    regular: string;
+  };
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);

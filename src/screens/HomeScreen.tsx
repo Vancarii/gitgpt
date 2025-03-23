@@ -24,7 +24,7 @@ import RepositoryCard from "../components/RepositoryCard";
 import CodeBlock from "../components/CodeBlock";
 import type { RootStackParamList, DrawerParamList } from "../../App";
 
-import { OPENAI_API_KEY } from "@env";
+// import { OPENAI_API_KEY } from "@env";
 import CustomText from "../components/CustomText";
 import { useGitHub } from "../context/GitHubContext";
 
@@ -135,25 +135,24 @@ const HomeScreen = () => {
 
       // Your API endpoint
       const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:3001/api/chat"
+          : "/api/chat",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "gpt-4o-mini",
             messages: [
               ...messages
-                .filter((msg) => !msg.type || msg.type === "code-response") // Include standard and code messages
+                .filter((msg) => !msg.type || msg.type === "code-response")
                 .map((msg) => ({
                   role: msg.role,
                   content: msg.content,
                 })),
               { role: "user", content: userMessage },
             ],
-            temperature: 0.7,
           }),
         }
       );

@@ -10,8 +10,9 @@ import {
   View,
   Text,
   TextInput,
+  Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/Feather";
+import { Feather as Icon } from "@expo/vector-icons";
 import { ThemeProvider } from "./src/context/ThemeContext";
 import { GitHubProvider } from "./src/context/GitHubContext";
 import { AuthProvider } from "./src/context/AuthContext";
@@ -25,6 +26,7 @@ import LoginScreen from "./src/screens/LoginScreen";
 import SidebarScreen from "./src/screens/SidebarScreen";
 import { useAuth } from "./src/context/AuthContext";
 import UserSettingsScreen from "./src/screens/UserSettingsScreen";
+import MobileSimulator from "./src/components/MobileSimulator";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
@@ -55,6 +57,8 @@ const MainStackNavigator = () => {
       screenOptions={({ navigation }) => ({
         headerStyle: {
           backgroundColor: "#1E1E1E",
+          height: Platform.OS === "ios" ? 100 : 80, // Taller header
+          paddingTop: Platform.OS === "web" ? 47 : 0, // Add padding only for web
         },
         headerTintColor: "#FFFFFF",
         headerTitleStyle: {
@@ -198,6 +202,31 @@ const MainNavigatorWithAuth = () => {
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
+  // Setup icon fonts for web
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      // Load vector icons on web
+      const iconFontStyles = `
+        @font-face {
+          src: url(${require("@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf")});
+          font-family: Feather;
+        }
+      `;
+
+      // Create stylesheet
+      const style = document.createElement("style");
+      style.type = "text/css";
+      if (style.styleSheet) {
+        style.styleSheet.cssText = iconFontStyles;
+      } else {
+        style.appendChild(document.createTextNode(iconFontStyles));
+      }
+
+      // Inject stylesheet
+      document.head.appendChild(style);
+    }
+  }, []);
+
   useEffect(() => {
     const loadFonts = async () => {
       await Font.loadAsync({
@@ -230,12 +259,16 @@ export default function App() {
     { fontFamily: "OPTIDanley-Medium" },
   ];
 
-  return (
+  const AppContent = () => (
     <ThemeProvider>
       <GitHubProvider>
         <AuthProvider>
           <NavigationContainer>
-            <StatusBar barStyle="light-content" backgroundColor="#1E1E1E" />
+            <StatusBar
+              barStyle="light-content"
+              backgroundColor="transparent"
+              translucent={true}
+            />
             <Drawer.Navigator
               initialRouteName="MainStack"
               drawerContent={(props) => <SidebarScreen {...props} />}
@@ -244,6 +277,11 @@ export default function App() {
                 drawerStyle: {
                   backgroundColor: "#1E1E1E",
                   width: 280,
+                },
+                headerStyle: {
+                  // Add top padding to the header on Android
+                  height: Platform.OS === "android" ? 80 : 60,
+                  paddingTop: Platform.OS === "android" ? 20 : 0,
                 },
               }}
             >
@@ -256,5 +294,14 @@ export default function App() {
         </AuthProvider>
       </GitHubProvider>
     </ThemeProvider>
+  );
+
+  // Conditionally wrap with mobile simulator on web
+  return Platform.OS === "web" ? (
+    <MobileSimulator>
+      <AppContent />
+    </MobileSimulator>
+  ) : (
+    <AppContent />
   );
 }

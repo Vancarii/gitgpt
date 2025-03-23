@@ -27,6 +27,7 @@ import SidebarScreen from "./src/screens/SidebarScreen";
 import { useAuth } from "./src/context/AuthContext";
 import UserSettingsScreen from "./src/screens/UserSettingsScreen";
 import MobileSimulator from "./src/components/MobileSimulator";
+import { PopupProvider } from "./src/context/PopupContext";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
@@ -264,34 +265,27 @@ export default function App() {
     <ThemeProvider>
       <GitHubProvider>
         <AuthProvider>
-          <NavigationContainer>
-            <StatusBar
-              barStyle="light-content"
-              backgroundColor="transparent"
-              translucent={true}
-            />
-            <Drawer.Navigator
-              initialRouteName="MainStack"
-              drawerContent={(props) => <SidebarScreen {...props} />}
-              screenOptions={{
-                headerShown: false,
-                drawerStyle: {
-                  backgroundColor: "#1E1E1E",
-                  width: 280,
-                },
-                headerStyle: {
-                  // Add top padding to the header on Android
-                  height: Platform.OS === "android" ? 80 : 60,
-                  paddingTop: Platform.OS === "android" ? 20 : 0,
-                },
-              }}
-            >
-              <Drawer.Screen
-                name="MainStack"
-                component={MainNavigatorWithAuth}
-              />
-            </Drawer.Navigator>
-          </NavigationContainer>
+          <PopupProvider>
+            <NavigationContainer>
+              <StatusBar barStyle="light-content" backgroundColor="#1E1E1E" />
+              <Drawer.Navigator
+                initialRouteName="MainStack"
+                drawerContent={(props) => <SidebarScreen {...props} />}
+                screenOptions={{
+                  headerShown: false,
+                  drawerStyle: {
+                    backgroundColor: "#1E1E1E",
+                    width: 280,
+                  },
+                }}
+              >
+                <Drawer.Screen
+                  name="MainStack"
+                  component={MainNavigatorWithAuth}
+                />
+              </Drawer.Navigator>
+            </NavigationContainer>
+          </PopupProvider>
         </AuthProvider>
       </GitHubProvider>
     </ThemeProvider>

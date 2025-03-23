@@ -27,6 +27,7 @@ import type { RootStackParamList, DrawerParamList } from "../../App";
 // import { OPENAI_API_KEY } from "@env";
 import CustomText from "../components/CustomText";
 import { useGitHub } from "../context/GitHubContext";
+import { usePopup } from "../context/PopupContext";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
@@ -65,6 +66,16 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const { isConnected } = useGitHub();
+  const { showPopup } = usePopup();
+
+  // Use this function wherever you need to show the popup
+  const handleUnavailableFeature = () => {
+    showPopup({
+      title: "We're sorry!",
+      description: "This page is not available yet, please check back later",
+      buttonText: "Close",
+    });
+  };
 
   // Function to extract code blocks from a string
   // Looks for code blocks in the triple back ticks
@@ -383,21 +394,21 @@ const HomeScreen = () => {
             <ActionButton
               label="Create image"
               icon="image"
-              onPress={() => console.log("Create image")}
+              onPress={handleUnavailableFeature}
               style={styles.actionButton}
             />
 
             <ActionButton
               label="Help me write"
               icon="edit-2"
-              onPress={() => console.log("Help me write")}
+              onPress={handleUnavailableFeature}
               style={styles.actionButton}
             />
 
             <ActionButton
               label="Brainstorm"
               icon="box"
-              onPress={() => console.log("Brainstorm")}
+              onPress={handleUnavailableFeature}
               style={styles.actionButton}
             />
 

@@ -7,6 +7,7 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import SidebarItem from "../components/SidebarItem";
 import { useAuth } from "../context/AuthContext";
+import { usePopup } from "../context/PopupContext";
 
 const recentItems = [
   { id: "1", label: "Count Good Subsequences C++" },
@@ -22,10 +23,20 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
   const { colors } = useTheme();
   const { isLoggedIn, username } = useAuth();
+  const { showPopup } = usePopup();
 
   const navigateAndCloseDrawer = (screen: string, params?: any) => {
     navigation.closeDrawer();
     navigation.navigate(screen, params);
+  };
+
+  // Use this function wherever you need to show the popup
+  const handleUnavailableFeature = () => {
+    showPopup({
+      title: "We're sorry!",
+      description: "This page is not available yet, please check back later",
+      buttonText: "Close",
+    });
   };
 
   return (
@@ -41,7 +52,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
         <SidebarItem
           label="Explore GPTs"
           icon="compass"
-          onPress={() => console.log("Explore GPTs")}
+          onPress={handleUnavailableFeature}
         />
 
         {/* Only show Integrations button if user is logged in */}
@@ -63,7 +74,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
           <SidebarItem
             key={item.id}
             label={item.label}
-            onPress={() => console.log(`Navigate to ${item.label}`)}
+            onPress={handleUnavailableFeature}
           />
         ))}
 
@@ -75,7 +86,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
 
         <SidebarItem
           label="BFS Algorithm in C++"
-          onPress={() => console.log("Navigate to BFS Algorithm")}
+          onPress={handleUnavailableFeature}
         />
 
         <View style={styles.sectionHeader}>
@@ -88,7 +99,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
           <SidebarItem
             key={item.id}
             label={item.label}
-            onPress={() => console.log(`Navigate to ${item.label}`)}
+            onPress={handleUnavailableFeature}
           />
         ))}
       </DrawerContentScrollView>
@@ -97,7 +108,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
         <SidebarItem
           label="Upgrade plan"
           icon="award"
-          onPress={() => console.log("Upgrade plan")}
+          onPress={handleUnavailableFeature}
         />
         <Text style={styles.upgradeSubtitle}>
           More access to the best models

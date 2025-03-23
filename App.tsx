@@ -61,6 +61,7 @@ const MainStackNavigator = () => {
           paddingTop: Platform.OS === "web" ? 47 : 0, // Add padding only for web
         },
         headerTintColor: "#FFFFFF",
+        headerTitleAlign: "center",
         headerTitleStyle: {
           fontWeight: "500",
           fontFamily: "OPTIDanley-Medium",

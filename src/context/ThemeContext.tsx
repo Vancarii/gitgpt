@@ -1,36 +1,38 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState } from "react"
+import type React from "react";
+import { createContext, useContext, useState } from "react";
 
-type ThemeType = "dark" | "light"
+type ThemeType = "dark" | "light";
 
 interface ThemeContextType {
-  theme: ThemeType
-  toggleTheme: () => void
+  theme: ThemeType;
+  toggleTheme: () => void;
   colors: {
-    background: string
-    text: string
-    primary: string
-    secondary: string
-    card: string
-    border: string
-    codeBackground: string
-    codeForeground: string
-    buttonBackground: string
-    buttonText: string
-    inputBackground: string
-  }
+    background: string;
+    text: string;
+    primary: string;
+    secondary: string;
+    card: string;
+    border: string;
+    codeBackground: string;
+    codeForeground: string;
+    buttonBackground: string;
+    buttonText: string;
+    inputBackground: string;
+  };
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<ThemeType>("dark")
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [theme, setTheme] = useState<ThemeType>("dark");
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const colors = {
     background: theme === "dark" ? "#1E1E1E" : "#FFFFFF",
@@ -44,16 +46,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     buttonBackground: theme === "dark" ? "#2D2D2D" : "#F0F0F0",
     buttonText: theme === "dark" ? "#FFFFFF" : "#000000",
     inputBackground: theme === "dark" ? "#3E3E3E" : "#F5F5F5",
-  }
+  };
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme, colors }}>{children}</ThemeContext.Provider>
-}
+  const fonts = {
+    regular: "OPTIDanley-Medium",
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors, fonts }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext)
+  const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider")
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
-  return context
-}
-
+  return context;
+};

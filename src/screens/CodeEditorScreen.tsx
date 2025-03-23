@@ -7,11 +7,18 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from "react-native";
-import { useRoute, type RouteProp } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../../App";
+
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const fullCode = `#include <iostream>
 #include <vector>
@@ -60,10 +67,15 @@ public:
     }
 };`;
 
-type CodeEditorScreenRouteProp = RouteProp<RootStackParamList, "CodeEditor">;
+// Add navigation type
+type CodeEditorScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "CodeEditor"
+>;
 
 const CodeEditorScreen = () => {
   const route = useRoute<CodeEditorScreenRouteProp>();
+  const navigation = useNavigation<CodeEditorScreenNavigationProp>();
   const { colors } = useTheme();
   const [acceptChanges, setAcceptChanges] = useState(false);
 
@@ -169,9 +181,17 @@ const CodeEditorScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.fileName, { color: colors.text }]}>
-          {fileName}
-        </Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-left" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.fileName, { color: colors.text }]}>
+            {fileName}
+          </Text>
+        </View>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.headerButton}>
             <Icon name="rotate-ccw" size={20} color={colors.text} />
@@ -225,6 +245,15 @@ const styles = StyleSheet.create({
     padding: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#333",
+    paddingTop: Platform.OS === "ios" ? 45 : 12,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  closeButton: {
+    padding: 8,
+    marginRight: 8,
   },
   fileName: {
     fontSize: 16,

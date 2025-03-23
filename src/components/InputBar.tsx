@@ -1,85 +1,89 @@
-"use client"
-
-import type React from "react"
-import { useState } from "react"
-import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native"
-import Icon from "react-native-vector-icons/Feather"
-import { useTheme } from "../context/ThemeContext"
+import { useState } from "react";
+import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import Icon from "react-native-vector-icons/Feather";
+import { useTheme } from "../context/ThemeContext";
 
 interface InputBarProps {
-  onSend: (text: string) => void
-  placeholder?: string
+  onSend: (text: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-const InputBar: React.FC<InputBarProps> = ({ onSend, placeholder = "Ask anything" }) => {
-  const [text, setText] = useState("")
-  const { colors } = useTheme()
+const InputBar = ({
+  onSend,
+  placeholder = "Message GitGPT...",
+  disabled = false,
+}: InputBarProps) => {
+  const [text, setText] = useState("");
+  const { colors } = useTheme();
 
   const handleSend = () => {
-    if (text.trim()) {
-      onSend(text)
-      setText("")
+    if (text.trim() && !disabled) {
+      onSend(text);
+      setText("");
     }
-  }
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
-      <TouchableOpacity style={styles.button}>
-        <Icon name="plus" size={20} color="#999" />
-      </TouchableOpacity>
-
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.card, opacity: disabled ? 0.7 : 1 },
+      ]}
+    >
       <TextInput
-        style={[styles.input, { color: colors.text }]}
-        placeholder={placeholder}
-        placeholderTextColor="#999"
         value={text}
         onChangeText={setText}
+        placeholder={placeholder}
+        placeholderTextColor="#666"
+        style={[styles.input, { color: colors.text }]}
         multiline
+        editable={!disabled}
       />
-
-      <View style={styles.rightButtons}>
-        <TouchableOpacity style={styles.button}>
-          <Icon name="search" size={20} color="#999" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.button}>
-          <Icon name="help-circle" size={20} color="#999" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-          <Icon name="send" size={20} color="#999" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={handleSend}
+        style={[
+          styles.sendButton,
+          {
+            backgroundColor: text.trim() ? colors.primary : "transparent",
+            opacity: disabled || !text.trim() ? 0.5 : 1,
+          },
+        ]}
+        disabled={disabled || !text.trim()}
+      >
+        <Icon
+          name="send"
+          size={18}
+          color={text.trim() ? "#FFFFFF" : colors.text}
+        />
+      </TouchableOpacity>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginHorizontal: 10,
-    marginVertical: 10,
+    alignItems: "flex-end",
+    padding: 8,
+    borderRadius: 8,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 8,
-  },
-  button: {
-    padding: 8,
-  },
-  rightButtons: {
-    flexDirection: "row",
-    alignItems: "center",
+    maxHeight: 120,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingHorizontal: 12,
   },
   sendButton: {
-    padding: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
   },
-})
+});
 
-export default InputBar
-
+export default InputBar;

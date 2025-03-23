@@ -1,7 +1,16 @@
+import { useEffect, useState } from "react";
+import * as Font from "expo-font";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { StatusBar, TouchableOpacity } from "react-native";
+import {
+  StatusBar,
+  TouchableOpacity,
+  ActivityIndicator,
+  View,
+  Text,
+  TextInput,
+} from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { ThemeProvider } from "./src/context/ThemeContext";
 import HomeScreen from "./src/screens/HomeScreen";
@@ -39,6 +48,7 @@ const MainStackNavigator = () => {
         headerTintColor: "#FFFFFF",
         headerTitleStyle: {
           fontWeight: "500",
+          fontFamily: "OPTIDanley-Medium",
         },
         contentStyle: {
           backgroundColor: "#1E1E1E",
@@ -52,27 +62,29 @@ const MainStackNavigator = () => {
             <Icon name="menu" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         ),
+        // Add a new chat button to the header
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => console.log("New chat")}
+            style={{ marginRight: 10 }}
+          >
+            <Icon name="plus-square" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        ),
       })}
     >
       <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: "ChatGPT" }}
-      />
-      <Stack.Screen
-        name="RepositoryList"
-        component={RepositoryListScreen}
-        options={{ title: "ChatGPT" }}
-      />
-      <Stack.Screen
-        name="RepositoryDetail"
-        component={RepositoryDetailScreen}
-        options={({ route }) => ({ title: route.params.name })}
+        options={{ title: "GitGPT" }}
       />
       <Stack.Screen
         name="CodeEditor"
         component={CodeEditorScreen}
-        options={({ route }) => ({ title: route.params.fileName })}
+        options={({ route }) => ({
+          title: route.params.fileName,
+          headerShown: false,
+        })}
       />
       <Stack.Screen
         name="Integrations"
@@ -84,6 +96,40 @@ const MainStackNavigator = () => {
 };
 
 export default function App() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        "OPTIDanley-Medium": require("./assets/fonts/OPTIDanley-Medium.otf"),
+      });
+      setFontsLoaded(true);
+    };
+
+    loadFonts();
+  }, []);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#1E1E1E" />
+      </View>
+    );
+  }
+
+  // Apply default font globally
+  Text.defaultProps = Text.defaultProps || {};
+  Text.defaultProps.style = [
+    Text.defaultProps.style,
+    { fontFamily: "OPTIDanley-Medium" },
+  ];
+
+  TextInput.defaultProps = TextInput.defaultProps || {};
+  TextInput.defaultProps.style = [
+    TextInput.defaultProps.style,
+    { fontFamily: "OPTIDanley-Medium" },
+  ];
+
   return (
     <ThemeProvider>
       <NavigationContainer>

@@ -8,8 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "npx expo export:web",
-    "vercel-build": "npm install --legacy-peer-deps && npx expo export:web",
+    "build": "npx expo export",
+    "vercel-build": "npm install --legacy-peer-deps && npx expo export",
     "server": "node server/server.js",
     "dev": "concurrently \"npm run server\" \"npm run web\""
   },

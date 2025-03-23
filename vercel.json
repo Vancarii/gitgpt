@@ -6,8 +6,8 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "web-build",
-        "buildCommand": "npm install --legacy-peer-deps && npx expo export:web"
+        "distDir": "dist",
+        "buildCommand": "npm install --legacy-peer-deps && npx expo export"
       }
     }
   ],

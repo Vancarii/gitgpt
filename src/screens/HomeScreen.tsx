@@ -516,7 +516,6 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 28,
-    fontWeight: "600",
     textAlign: "center",
     marginBottom: 40,
   },

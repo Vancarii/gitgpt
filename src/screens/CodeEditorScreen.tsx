@@ -73,6 +73,9 @@ type CodeEditorScreenNavigationProp = NativeStackNavigationProp<
   "CodeEditor"
 >;
 
+// Define the route prop type
+type CodeEditorScreenRouteProp = RouteProp<RootStackParamList, "CodeEditor">;
+
 const CodeEditorScreen = () => {
   const route = useRoute<CodeEditorScreenRouteProp>();
   const navigation = useNavigation<CodeEditorScreenNavigationProp>();

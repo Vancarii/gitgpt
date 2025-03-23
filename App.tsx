@@ -218,14 +218,56 @@ export default function App() {
       // Create stylesheet
       const style = document.createElement("style");
       style.type = "text/css";
-      if (style.styleSheet) {
-        style.styleSheet.cssText = iconFontStyles;
+      if (style.sheet) {
+        const sheet = style.sheet as CSSStyleSheet;
+        sheet.insertRule(iconFontStyles, sheet.cssRules.length);
       } else {
         style.appendChild(document.createTextNode(iconFontStyles));
       }
 
       // Inject stylesheet
       document.head.appendChild(style);
+    }
+  }, []);
+
+  // Add this useEffect hook in your App component to inject CSS for hiding scrollbars on web
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      // Create style for hiding scrollbars
+      const hideScrollbarStyles = `
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      *::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* Hide scrollbar for IE, Edge and Firefox */
+      * {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+      }
+      
+      /* Ensure body has no margin and fills viewport */
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    `;
+
+      // Create stylesheet
+      const scrollbarStyle = document.createElement("style");
+      scrollbarStyle.type = "text/css";
+      if (scrollbarStyle.sheet) {
+        const sheet = scrollbarStyle.sheet as CSSStyleSheet;
+        sheet.insertRule(hideScrollbarStyles, sheet.cssRules.length);
+      } else {
+        scrollbarStyle.appendChild(
+          document.createTextNode(hideScrollbarStyles)
+        );
+      }
+
+      // Inject stylesheet
+      document.head.appendChild(scrollbarStyle);
     }
   }, []);
 
@@ -248,19 +290,6 @@ export default function App() {
     );
   }
 
-  // Apply default font globally
-  Text.defaultProps = Text.defaultProps || {};
-  Text.defaultProps.style = [
-    Text.defaultProps.style,
-    { fontFamily: "OPTIDanley-Medium" },
-  ];
-
-  TextInput.defaultProps = TextInput.defaultProps || {};
-  TextInput.defaultProps.style = [
-    TextInput.defaultProps.style,
-    { fontFamily: "OPTIDanley-Medium" },
-  ];
-
   const AppContent = () => (
     <ThemeProvider>
       <GitHubProvider>
@@ -275,7 +304,7 @@ export default function App() {
                   headerShown: false,
                   drawerStyle: {
                     backgroundColor: "#1E1E1E",
-                    width: 280,
+                    width: 250,
                   },
                 }}
               >

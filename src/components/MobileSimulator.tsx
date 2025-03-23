@@ -1,5 +1,11 @@
 import React from "react";
-import { View, StyleSheet, Platform, SafeAreaView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  SafeAreaView,
+  ViewStyle,
+} from "react-native";
 
 interface MobileSimulatorProps {
   children: React.ReactNode;
@@ -12,7 +18,12 @@ const MobileSimulator = ({ children }: MobileSimulatorProps) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === "web" ? webStyles.fullHeight : {},
+      ]}
+    >
       <View style={styles.phoneFrame}>
         <View style={styles.notch} />
         <View style={styles.button} />
@@ -26,59 +37,84 @@ const MobileSimulator = ({ children }: MobileSimulatorProps) => {
   );
 };
 
+// Define scale factor to resize the phone (0.9 = 90% of original size)
+const SCALE_FACTOR = 0.85;
+
+// Original dimensions
+const ORIGINAL_WIDTH = 393;
+const ORIGINAL_HEIGHT = 852;
+
+// Scaled dimensions
+const SCALED_WIDTH = ORIGINAL_WIDTH * SCALE_FACTOR;
+const SCALED_HEIGHT = ORIGINAL_HEIGHT * SCALE_FACTOR;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f0f0f0",
-    height: "100vh",
+    // height: "100vh", // Removed this line to fix the TypeScript error
   },
   phoneFrame: {
-    width: 393,
-    height: 852,
+    width: SCALED_WIDTH,
+    height: SCALED_HEIGHT,
     backgroundColor: "#000",
-    borderRadius: 50,
+    borderRadius: 45 * SCALE_FACTOR,
     overflow: "hidden",
     position: "relative",
-    boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",
-    borderWidth: 10,
+    // boxShadow handled in webStyles
+    borderWidth: 10 * SCALE_FACTOR,
     borderColor: "#000",
   },
   notch: {
     position: "absolute",
     top: 0,
     left: "50%",
-    marginLeft: -75,
-    width: 150,
-    height: 38,
+    marginLeft: -75 * SCALE_FACTOR,
+    width: 150 * SCALE_FACTOR,
+    height: 38 * SCALE_FACTOR,
     backgroundColor: "#000",
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
+    borderBottomLeftRadius: 18 * SCALE_FACTOR,
+    borderBottomRightRadius: 18 * SCALE_FACTOR,
     zIndex: 1000,
   },
   button: {
     position: "absolute",
-    right: -12,
-    top: 120,
-    width: 4,
-    height: 30,
+    right: -12 * SCALE_FACTOR,
+    top: 120 * SCALE_FACTOR,
+    width: 4 * SCALE_FACTOR,
+    height: 30 * SCALE_FACTOR,
     backgroundColor: "#000",
-    borderTopLeftRadius: 2,
-    borderBottomLeftRadius: 2,
+    borderTopLeftRadius: 2 * SCALE_FACTOR,
+    borderBottomLeftRadius: 2 * SCALE_FACTOR,
     zIndex: 1000,
   },
   content: {
     flex: 1,
-    borderRadius: 40,
+    borderRadius: 36 * SCALE_FACTOR,
     overflow: "hidden",
     backgroundColor: "#1E1E1E",
   },
   statusBarPadding: {
-    height: 30, // This gives space for the notch area
+    height: 30 * SCALE_FACTOR, // This gives space for the notch area
     width: "100%",
     backgroundColor: "#1E1E1E",
   },
 });
+
+// Create web-specific styles using a separate StyleSheet
+const webStyles: Record<string, ViewStyle> =
+  Platform.OS === "web"
+    ? {
+        fullHeight: {
+          height: "100vh" as any, // Type assertion to bypass TypeScript check
+          boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",
+        },
+        boxShadow: {
+          boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",
+        },
+      }
+    : {};
 
 export default MobileSimulator;

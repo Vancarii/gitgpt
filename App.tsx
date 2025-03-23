@@ -13,12 +13,18 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { ThemeProvider } from "./src/context/ThemeContext";
+import { GitHubProvider } from "./src/context/GitHubContext";
+import { AuthProvider } from "./src/context/AuthContext";
 import HomeScreen from "./src/screens/HomeScreen";
 import RepositoryListScreen from "./src/screens/RepositoryListScreen";
 import RepositoryDetailScreen from "./src/screens/RepositoryDetailScreen";
 import CodeEditorScreen from "./src/screens/CodeEditorScreen";
 import IntegrationsScreen from "./src/screens/IntegrationsScreen";
+import GitHubLoginScreen from "./src/screens/GitHubLoginScreen";
+import LoginScreen from "./src/screens/LoginScreen";
 import SidebarScreen from "./src/screens/SidebarScreen";
+import { useAuth } from "./src/context/AuthContext";
+import UserSettingsScreen from "./src/screens/UserSettingsScreen";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
@@ -27,6 +33,9 @@ export type RootStackParamList = {
   RepositoryDetail: { id: string; name: string };
   CodeEditor: { fileName: string };
   Integrations: undefined;
+  GitHubLogin: undefined;
+  Login: undefined;
+  UserSettings: undefined;
 };
 
 export type DrawerParamList = {
@@ -38,6 +47,8 @@ const Drawer = createDrawerNavigator<DrawerParamList>();
 
 // Main stack navigator containing all screens except the sidebar
 const MainStackNavigator = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <Stack.Navigator
       initialRouteName="Home"
@@ -62,13 +73,38 @@ const MainStackNavigator = () => {
             <Icon name="menu" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         ),
-        // Add a new chat button to the header
+        // Change the right button based on login status
         headerRight: () => (
           <TouchableOpacity
-            onPress={() => console.log("New chat")}
-            style={{ marginRight: 10 }}
+            onPress={() => {
+              if (isLoggedIn) {
+                console.log("New chat");
+              } else {
+                navigation.navigate("Login");
+              }
+            }}
+            style={{
+              marginRight: 10,
+              backgroundColor: isLoggedIn ? "#1E1E1E" : "#FFFFFF",
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+            }}
           >
-            <Icon name="plus-square" size={22} color="#FFFFFF" />
+            {isLoggedIn ? (
+              <Icon name="edit" size={20} color="#FFFFFF" />
+            ) : (
+              <Text
+                style={{
+                  color: "#1E1E1E",
+                  fontWeight: "500",
+                  fontSize: 14,
+                  fontFamily: "OPTIDanley-Medium",
+                }}
+              >
+                Log In
+              </Text>
+            )}
           </TouchableOpacity>
         ),
       })}
@@ -89,10 +125,74 @@ const MainStackNavigator = () => {
       <Stack.Screen
         name="Integrations"
         component={IntegrationsScreen}
-        options={{ title: "Integrations" }}
+        options={{ title: "Integrations", headerRight: () => <View></View> }}
+      />
+      <Stack.Screen
+        name="GitHubLogin"
+        component={GitHubLoginScreen}
+        options={({ navigation }) => ({
+          title: "GitHub Login",
+          headerStyle: {
+            backgroundColor: "#1E1E1E",
+          },
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: {
+            fontWeight: "500",
+            fontFamily: "OPTIDanley-Medium",
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ marginLeft: 10 }}
+            >
+              <Icon name="arrow-left" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => <View></View>,
+        })}
+      />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={({ navigation }) => ({
+          title: "Login",
+          headerStyle: {
+            backgroundColor: "#1E1E1E",
+          },
+          headerTintColor: "#FFFFFF",
+          headerTitleStyle: {
+            fontWeight: "500",
+            fontFamily: "OPTIDanley-Medium",
+          },
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ marginLeft: 10 }}
+            >
+              <Icon name="arrow-left" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          ),
+          headerRight: () => <View></View>,
+        })}
+      />
+      <Stack.Screen
+        name="UserSettings"
+        component={UserSettingsScreen}
+        options={{
+          title: "Settings",
+          presentation: "modal",
+          animation: "slide_from_bottom",
+          headerShown: false,
+        }}
       />
     </Stack.Navigator>
   );
+};
+
+// Wrapper component to use context in MainStackNavigator
+const MainNavigatorWithAuth = () => {
+  const authContext = useAuth();
+  return <MainStackNavigator />;
 };
 
 export default function App() {
@@ -132,22 +232,29 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <NavigationContainer>
-        <StatusBar barStyle="light-content" backgroundColor="#1E1E1E" />
-        <Drawer.Navigator
-          initialRouteName="MainStack"
-          drawerContent={(props) => <SidebarScreen {...props} />}
-          screenOptions={{
-            headerShown: false,
-            drawerStyle: {
-              backgroundColor: "#1E1E1E",
-              width: 280,
-            },
-          }}
-        >
-          <Drawer.Screen name="MainStack" component={MainStackNavigator} />
-        </Drawer.Navigator>
-      </NavigationContainer>
+      <GitHubProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <StatusBar barStyle="light-content" backgroundColor="#1E1E1E" />
+            <Drawer.Navigator
+              initialRouteName="MainStack"
+              drawerContent={(props) => <SidebarScreen {...props} />}
+              screenOptions={{
+                headerShown: false,
+                drawerStyle: {
+                  backgroundColor: "#1E1E1E",
+                  width: 280,
+                },
+              }}
+            >
+              <Drawer.Screen
+                name="MainStack"
+                component={MainNavigatorWithAuth}
+              />
+            </Drawer.Navigator>
+          </NavigationContainer>
+        </AuthProvider>
+      </GitHubProvider>
     </ThemeProvider>
   );
 }

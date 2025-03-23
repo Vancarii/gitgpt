@@ -4,6 +4,7 @@ import Icon from "react-native-vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "../context/ThemeContext";
+import { useGitHub } from "../context/GitHubContext";
 import type { RootStackParamList } from "../../App";
 
 type IntegrationsScreenNavigationProp = NativeStackNavigationProp<
@@ -14,12 +15,16 @@ type IntegrationsScreenNavigationProp = NativeStackNavigationProp<
 const IntegrationsScreen = () => {
   const navigation = useNavigation<IntegrationsScreenNavigationProp>();
   const { colors } = useTheme();
+  const { isConnected, setIsConnected } = useGitHub();
 
   const handleConnect = () => {
-    // Simulate GitHub connection
-    setTimeout(() => {
-      navigation.navigate("RepositoryList");
-    }, 1000);
+    if (isConnected) {
+      // If already connected, disconnect
+      setIsConnected(false);
+    } else {
+      // Navigate to GitHub login screen
+      navigation.navigate("GitHubLogin");
+    }
   };
 
   return (
@@ -33,14 +38,28 @@ const IntegrationsScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.connectButton, { backgroundColor: colors.primary }]}
+          style={[
+            styles.connectButton,
+            {
+              backgroundColor: isConnected ? "#F44336" : colors.primary,
+            },
+          ]}
           onPress={handleConnect}
         >
           <Text style={[styles.connectButtonText, { color: colors.text }]}>
-            Connect
+            {isConnected ? "Disconnect" : "Connect"}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {isConnected && (
+        <View style={styles.connectedMessage}>
+          <Icon name="check-circle" size={18} color="#4CAF50" />
+          <Text style={[styles.connectedText, { color: colors.text }]}>
+            GitHub connected successfully
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -72,6 +91,14 @@ const styles = StyleSheet.create({
   },
   connectButtonText: {
     fontWeight: "500",
+  },
+  connectedMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  connectedText: {
+    marginLeft: 8,
   },
 });
 

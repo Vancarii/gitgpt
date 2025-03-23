@@ -1,11 +1,12 @@
 "use client";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import {
   DrawerContentScrollView,
   type DrawerContentComponentProps,
 } from "@react-navigation/drawer";
 import { useTheme } from "../context/ThemeContext";
 import SidebarItem from "../components/SidebarItem";
+import { useAuth } from "../context/AuthContext";
 
 const recentItems = [
   { id: "1", label: "Count Good Subsequences C++" },
@@ -20,6 +21,7 @@ const recentItems = [
 const SidebarScreen = (props: DrawerContentComponentProps) => {
   const { navigation } = props;
   const { colors } = useTheme();
+  const { isLoggedIn, username } = useAuth();
 
   const navigateAndCloseDrawer = (screen: string, params?: any) => {
     navigation.closeDrawer();
@@ -42,11 +44,14 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
           onPress={() => console.log("Explore GPTs")}
         />
 
-        <SidebarItem
-          label="Integrations"
-          icon="link"
-          onPress={() => navigateAndCloseDrawer("Integrations")}
-        />
+        {/* Only show Integrations button if user is logged in */}
+        {isLoggedIn && (
+          <SidebarItem
+            label="Integrations"
+            icon="link"
+            onPress={() => navigateAndCloseDrawer("Integrations")}
+          />
+        )}
 
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -98,14 +103,30 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
           More access to the best models
         </Text>
 
-        <View style={styles.userContainer}>
+        <TouchableOpacity
+          style={styles.userContainer}
+          onPress={() => {
+            navigation.closeDrawer();
+            if (isLoggedIn) {
+              // If user is logged in, go to User Settings
+              navigation.navigate("UserSettings");
+            } else {
+              // If user is not logged in, go to Login screen
+              navigation.navigate("Login");
+            }
+          }}
+        >
           <View style={styles.userAvatar}>
-            <Text style={styles.userInitials}>YW</Text>
+            <Text style={styles.userInitials}>
+              {isLoggedIn && username
+                ? username.substring(0, 2).toUpperCase()
+                : "?"}
+            </Text>
           </View>
           <Text style={[styles.userName, { color: colors.text }]}>
-            Yecheng Wang
+            {isLoggedIn && username ? username : "Not logged in"}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -26,6 +26,7 @@ import type { RootStackParamList, DrawerParamList } from "../../App";
 
 import { OPENAI_API_KEY } from "@env";
 import CustomText from "../components/CustomText";
+import { useGitHub } from "../context/GitHubContext";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
@@ -63,6 +64,7 @@ const HomeScreen = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const { isConnected } = useGitHub();
 
   // Function to extract code blocks from a string
   // Looks for code blocks in the triple back ticks
@@ -400,12 +402,14 @@ const HomeScreen = () => {
               style={styles.actionButton}
             />
 
-            <ActionButton
-              label="Import Repository"
-              icon="github"
-              onPress={handleImportRepository}
-              style={styles.actionButton}
-            />
+            {isConnected && (
+              <ActionButton
+                label="Import Repository"
+                icon="github"
+                onPress={handleImportRepository}
+                style={styles.actionButton}
+              />
+            )}
           </View>
         </View>
       );

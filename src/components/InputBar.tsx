@@ -45,7 +45,7 @@ const InputBar = ({
         style={[
           styles.sendButton,
           {
-            backgroundColor: text.trim() ? colors.primary : "transparent",
+            backgroundColor: colors.accent,
             opacity: disabled || !text.trim() ? 0.5 : 1,
           },
         ]}
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,

@@ -10,6 +10,7 @@ interface ThemeContextType {
   toggleTheme: () => void;
   colors: {
     background: string;
+    accent: string;
     text: string;
     primary: string;
     secondary: string;
@@ -36,6 +37,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const colors = {
     background: theme === "dark" ? "#1E1E1E" : "#FFFFFF",
+    accent: theme === "dark" ? "#1F6E6D" : "#1F6E6D",
     text: theme === "dark" ? "#FFFFFF" : "#000000",
     primary: theme === "dark" ? "#3E3E3E" : "#F0F0F0",
     secondary: theme === "dark" ? "#2D2D2D" : "#E0E0E0",

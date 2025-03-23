@@ -407,7 +407,7 @@ const HomeScreen = () => {
                 label="Import Repository"
                 icon="github"
                 onPress={handleImportRepository}
-                style={styles.actionButton}
+                style={styles.importButton}
               />
             )}
           </View>
@@ -520,6 +520,18 @@ const styles = StyleSheet.create({
   actionButton: {
     width: "48%",
     marginBottom: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  importButton: {
+    width: "48%",
+    marginBottom: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderRadius: 8,
+    borderColor: "#1F6E6D",
+    padding: 2,
   },
   messagesContainer: {
     width: "100%",

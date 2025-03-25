@@ -28,7 +28,6 @@ const MobileSimulator = ({ children }: MobileSimulatorProps) => {
         <View style={styles.notch} />
         <View style={styles.button} />
         <View style={styles.content}>
-          {/* Add extra padding at the top to account for the notch */}
           <View style={styles.statusBarPadding} />
           {children}
         </View>
@@ -53,8 +52,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    // height: "100vh", // Removed this line to fix the TypeScript error
+    backgroundColor: "transparent",
   },
   phoneFrame: {
     width: SCALED_WIDTH,
@@ -110,6 +108,7 @@ const webStyles: Record<string, ViewStyle> =
         fullHeight: {
           height: "100vh" as any, // Type assertion to bypass TypeScript check
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",
+          backgrouncColor: "transparent",
         },
         boxShadow: {
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",

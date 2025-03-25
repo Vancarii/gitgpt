@@ -28,6 +28,7 @@ import { useAuth } from "./src/context/AuthContext";
 import UserSettingsScreen from "./src/screens/UserSettingsScreen";
 import MobileSimulator from "./src/components/MobileSimulator";
 import { PopupProvider } from "./src/context/PopupContext";
+import WebLayout from "./src/components/WebLayout";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
@@ -322,9 +323,11 @@ export default function App() {
 
   // Conditionally wrap with mobile simulator on web
   return Platform.OS === "web" ? (
-    <MobileSimulator>
-      <AppContent />
-    </MobileSimulator>
+    <WebLayout>
+      <MobileSimulator>
+        <AppContent />
+      </MobileSimulator>
+    </WebLayout>
   ) : (
     <AppContent />
   );

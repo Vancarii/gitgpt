@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
-    height: "100vh",
+    // height: "100vh",
     backgroundColor: "#121212",
   },
   documentationPanel: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#1E1E1E",
     padding: 40,
-    overflow: "auto",
+    overflow: "scroll",
   },
   documentationContent: {
     maxWidth: 600,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "left",
+    justifyContent: "flex-start",
     marginTop: 20,
     marginBottom: 20,
   },

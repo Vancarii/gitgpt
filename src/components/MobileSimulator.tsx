@@ -108,7 +108,7 @@ const webStyles: Record<string, ViewStyle> =
         fullHeight: {
           height: "100vh" as any, // Type assertion to bypass TypeScript check
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",
-          backgrouncColor: "transparent",
+          backgroundColor: "transparent",
         },
         boxShadow: {
           boxShadow: "0px 0px 30px rgba(0, 0, 0, 0.3)",

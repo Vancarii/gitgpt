@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     padding: 8,
     borderRadius: 8,
+    boxShadow: "0px 5px 5px rgba(0, 0, 0, 0.3)",
   },
   input: {
     flex: 1,

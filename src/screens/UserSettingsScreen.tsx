@@ -14,7 +14,7 @@ type UserSettingsScreenNavigationProp = NativeStackNavigationProp<
 
 const UserSettingsScreen = () => {
   const navigation = useNavigation<UserSettingsScreenNavigationProp>();
-  const { colors } = useTheme();
+  const { colors, theme, toggleTheme } = useTheme();
   const { isLoggedIn, username, setIsLoggedIn, setUsername } = useAuth();
 
   const handleLogout = () => {
@@ -102,11 +102,10 @@ const UserSettingsScreen = () => {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           General
         </Text>
-
-        <TouchableOpacity style={styles.settingItem}>
+        <TouchableOpacity style={styles.settingItem} onPress={toggleTheme}>
           <Icon name="moon" size={20} color={colors.text} />
           <Text style={[styles.settingText, { color: colors.text }]}>
-            Theme
+            {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
           </Text>
         </TouchableOpacity>
 

@@ -13,12 +13,10 @@ import {
   Platform,
 } from "react-native";
 import { Feather as Icon } from "@expo/vector-icons";
-import { ThemeProvider } from "./src/context/ThemeContext";
+import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import { GitHubProvider } from "./src/context/GitHubContext";
 import { AuthProvider } from "./src/context/AuthContext";
 import HomeScreen from "./src/screens/HomeScreen";
-import RepositoryListScreen from "./src/screens/RepositoryListScreen";
-import RepositoryDetailScreen from "./src/screens/RepositoryDetailScreen";
 import CodeEditorScreen from "./src/screens/CodeEditorScreen";
 import IntegrationsScreen from "./src/screens/IntegrationsScreen";
 import GitHubLoginScreen from "./src/screens/GitHubLoginScreen";
@@ -52,20 +50,20 @@ const Drawer = createDrawerNavigator<DrawerParamList>();
 // Main stack navigator containing all screens except the sidebar
 const MainStackNavigator = () => {
   const { isLoggedIn } = useAuth();
+  const { colors } = useTheme();
 
   return (
     <Stack.Navigator
       initialRouteName="Home"
       screenOptions={({ navigation }) => ({
         headerStyle: {
-          backgroundColor: "#1E1E1E",
-          height: Platform.OS === "ios" ? 100 : 80, // Taller header
-          paddingTop: Platform.OS === "web" ? 47 : 0, // Add padding only for web
+          backgroundColor: colors.background,
+          boxShadow: "0px 5px 5px rgba(0, 0, 0, 0.3)",
+          borderBottomWidth: 0,
         },
-        headerTintColor: "#FFFFFF",
+        headerTintColor: colors.text,
         headerTitleAlign: "center",
         headerTitleStyle: {
-          fontWeight: "500",
           fontFamily: "OPTIDanley-Medium",
         },
         contentStyle: {
@@ -77,7 +75,7 @@ const MainStackNavigator = () => {
             onPress={() => navigation.openDrawer()}
             style={{ marginLeft: 10 }}
           >
-            <Icon name="menu" size={24} color="#FFFFFF" />
+            <Icon name="menu" size={24} color={colors.text} />
           </TouchableOpacity>
         ),
         // Change the right button based on login status
@@ -140,12 +138,13 @@ const MainStackNavigator = () => {
         options={({ navigation }) => ({
           title: "GitHub Login",
           headerStyle: {
-            backgroundColor: "#1E1E1E",
+            backgroundColor: colors.background,
           },
-          headerTintColor: "#FFFFFF",
+          headerTintColor: colors.text,
           headerTitleStyle: {
             fontWeight: "500",
             fontFamily: "OPTIDanley-Medium",
+            color: colors.text,
           },
           headerLeft: () => (
             <TouchableOpacity
@@ -164,10 +163,11 @@ const MainStackNavigator = () => {
         options={({ navigation }) => ({
           title: "Login",
           headerStyle: {
-            backgroundColor: "#1E1E1E",
+            backgroundColor: colors.background,
           },
           headerTintColor: "#FFFFFF",
           headerTitleStyle: {
+            color: colors.text,
             fontWeight: "500",
             fontFamily: "OPTIDanley-Medium",
           },

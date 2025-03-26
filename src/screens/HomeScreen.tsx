@@ -23,11 +23,10 @@ import InputBar from "../components/InputBar";
 import RepositoryCard from "../components/RepositoryCard";
 import CodeBlock from "../components/CodeBlock";
 import type { RootStackParamList, DrawerParamList } from "../../App";
-
-// import { OPENAI_API_KEY } from "@env";
 import CustomText from "../components/CustomText";
 import { useGitHub } from "../context/GitHubContext";
 import { usePopup } from "../context/PopupContext";
+import { useAuth } from "../context/AuthContext";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
@@ -46,17 +45,61 @@ type Message = {
   timestamp: Date;
   // Optional properties for special message types
   type?: "repository-list" | "repository-detail" | "code-response";
-  repositoryList?: Array<{ id: string; name: string }>;
+  repositoryList?: Array<{
+    id: string;
+    name: string;
+    language: string;
+    stars: number;
+    forks: number;
+    description: string;
+    isPrivate: boolean;
+  }>;
   repositoryName?: string;
   codeSections?: CodeSection[];
 };
 
 // Sample repositories
 const repositories = [
-  { id: "1", name: "Repository 1" },
-  { id: "2", name: "Repository 2" },
-  { id: "3", name: "Repository 3" },
-  { id: "4", name: "Repository 4" },
+  {
+    id: "1",
+    name: "react-native-app",
+    language: "TypeScript",
+    stars: 124,
+    forks: 38,
+    description:
+      "A React Native application for mobile development with TypeScript support",
+    isPrivate: false,
+  },
+  {
+    id: "2",
+    name: "personal-website",
+    language: "JavaScript",
+    stars: 15,
+    forks: 3,
+    description:
+      "Personal portfolio website built with Next.js and Tailwind CSS",
+    isPrivate: true,
+  },
+  {
+    id: "3",
+    name: "data-visualization-tool",
+    language: "Python",
+    stars: 87,
+    forks: 12,
+    description:
+      "A tool for visualizing complex datasets using matplotlib and seaborn",
+    isPrivate: false,
+  },
+  {
+    id: "4",
+    name: "algorithm-challenges",
+    language: "C++",
+    stars: 45,
+    forks: 7,
+    description:
+      "Solutions to various algorithm challenges and competitive programming problems",
+    isPrivate: false,
+  },
 ];
 
 const HomeScreen = () => {
@@ -67,8 +110,9 @@ const HomeScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const { isConnected } = useGitHub();
   const { showPopup } = usePopup();
+  const { isLoggedIn } = useAuth();
 
-  // Use this function wherever you need to show the popup
+  // show the popup
   const handleUnavailableFeature = () => {
     showPopup({
       title: "We're sorry!",
@@ -254,7 +298,7 @@ const HomeScreen = () => {
         ...prev,
         {
           id: Date.now().toString() + "-assistant",
-          content: `Successfully connected to ${repo.name}! What do you want me to do next?`,
+          content: `Successfully connected to ${repo.name}! What would you like me to do next?`,
           role: "assistant",
           timestamp: new Date(),
           type: "repository-detail",
@@ -308,6 +352,24 @@ const HomeScreen = () => {
     // Implement clipboard functionality
   };
 
+  // check login status before GitHub login
+  const handleGitHubLogin = () => {
+    if (!isLoggedIn) {
+      // User not logged in to app, show popup
+      showPopup({
+        title: "Login Required",
+        description:
+          "Please log in to your account first before connecting to GitHub.",
+        buttonText: "Close",
+      });
+
+      navigation.navigate("Login");
+    } else {
+      // User is logged in, proceed to GitHub login
+      navigation.navigate("GitHubLogin");
+    }
+  };
+
   const renderRepositoryList = (message: Message) => {
     if (!message.repositoryList) return null;
 
@@ -319,6 +381,11 @@ const HomeScreen = () => {
           renderItem={({ item }) => (
             <RepositoryCard
               name={item.name}
+              language={item.language}
+              stars={item.stars}
+              forks={item.forks}
+              description={item.description}
+              isPrivate={item.isPrivate}
               onPress={() => handleRepositorySelect(item)}
             />
           )}
@@ -335,7 +402,7 @@ const HomeScreen = () => {
     return (
       <View style={styles.specialContentContainer}>
         <Text style={[styles.repoConnectedText, { color: colors.text }]}>
-          You can now ask questions about {message.repositoryName}.
+          You can now ask questions about any file in {message.repositoryName}.
         </Text>
       </View>
     );
@@ -412,12 +479,19 @@ const HomeScreen = () => {
               style={styles.actionButton}
             />
 
-            {isConnected && (
+            {isConnected ? (
               <ActionButton
                 label="Import Repository"
                 icon="github"
                 onPress={handleImportRepository}
                 style={styles.importButton}
+              />
+            ) : (
+              <ActionButton
+                label="GitHub Login"
+                icon="github"
+                onPress={handleGitHubLogin}
+                style={styles.gitHubButton}
               />
             )}
           </View>
@@ -538,8 +612,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderRadius: 8,
     borderColor: "#1F6E6D",
+    padding: 2,
+  },
+  gitHubButton: {
+    width: "48%",
+    marginBottom: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#6e5494",
     padding: 2,
   },
   messagesContainer: {

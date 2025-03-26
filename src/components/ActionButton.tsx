@@ -54,9 +54,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 25,
     borderWidth: 1,
     marginVertical: 6,
+    boxShadow: "0px 5px 5px rgba(0, 0, 0, 0.3)",
   },
   icon: {
     marginRight: 8,

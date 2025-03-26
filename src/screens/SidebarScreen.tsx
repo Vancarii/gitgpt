@@ -58,7 +58,7 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
         {/* Only show Integrations button if user is logged in */}
         {isLoggedIn && (
           <SidebarItem
-            label="Integrations"
+            label="Linked Accounts"
             icon="link"
             onPress={() => navigateAndCloseDrawer("Integrations")}
           />
@@ -131,11 +131,13 @@ const SidebarScreen = (props: DrawerContentComponentProps) => {
             <Text style={styles.userInitials}>
               {isLoggedIn && username
                 ? username.substring(0, 2).toUpperCase()
-                : "?"}
+                : "U"}
             </Text>
           </View>
           <Text style={[styles.userName, { color: colors.text }]}>
-            {isLoggedIn && username ? username : "Not logged in"}
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {isLoggedIn ? (username ? username : "User") : "Not Logged In"}
+            </Text>
           </Text>
         </TouchableOpacity>
       </View>

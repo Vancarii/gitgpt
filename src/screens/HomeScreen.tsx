@@ -27,6 +27,10 @@ import CustomText from "../components/CustomText";
 import { useGitHub } from "../context/GitHubContext";
 import { usePopup } from "../context/PopupContext";
 import { useAuth } from "../context/AuthContext";
+import { Feather as Icon } from "@expo/vector-icons";
+
+// TEMPORARY BUTTON TO NAVIGATE TO THE CODE EDITOR
+// import NavigateToCodeEditorButton from "../components/TempButton";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
@@ -189,7 +193,7 @@ const HomeScreen = () => {
       // Your API endpoint
       const response = await fetch(
         process.env.NODE_ENV === "development"
-          ? "http://localhost:3001/api/chat"
+          ? "http://localhost:3000/api/chat"
           : "/api/chat",
         {
           method: "POST",
@@ -434,11 +438,60 @@ const HomeScreen = () => {
 
             return (
               <View key={`code-${index}`} style={styles.codeBlockContainer}>
-                <CodeBlock
-                  code={codeSection.code}
-                  onCopy={handleCopyCode}
-                  onShowFullCode={() => handleViewFullCode(codeSection.code)}
-                />
+                <View
+                  style={[
+                    styles.codeBlockHeader,
+                    { backgroundColor: colors.codeBackground },
+                  ]}
+                >
+                  <Text style={styles.codeLanguageLabel}>
+                    {codeSection.language || "text"}
+                  </Text>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={[
+                    styles.codeScrollContainer,
+                    { backgroundColor: colors.codeBackground },
+                  ]}
+                >
+                  <View style={styles.codeContentContainer}>
+                    {/* Line Numbers Column */}
+                    <View style={styles.lineNumbersColumn}>
+                      {codeSection.code.split("\n").map((_, lineIndex) => (
+                        <Text key={lineIndex} style={styles.lineNumber}>
+                          {lineIndex + 1}
+                        </Text>
+                      ))}
+                    </View>
+
+                    {/* Code Content */}
+                    <View style={styles.codeTextColumn}>
+                      <Text style={styles.codeText}>{codeSection.code}</Text>
+                    </View>
+                  </View>
+                </ScrollView>
+                <View
+                  style={[
+                    styles.codeBlockFooter,
+                    { backgroundColor: colors.codeBackground },
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={styles.codeButton}
+                    onPress={handleCopyCode}
+                  >
+                    <Icon name="copy" size={16} color="#FFFFFF" />
+                    <Text style={styles.codeButtonText}>Copy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.codeButton}
+                    onPress={() => handleViewFullCode(codeSection.code)}
+                  >
+                    <Text style={styles.codeButtonText}>Open in Editor</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             );
           }
@@ -557,6 +610,9 @@ const HomeScreen = () => {
           {renderMessages()}
         </ScrollView>
 
+        {/* TEMPORARY BUTTON TO NAVIGATE TO THE CODE EDITOR */}
+        {/* <NavigateToCodeEditorButton /> */}
+
         <View style={styles.inputContainer}>
           <InputBar onSend={handleSend} disabled={isLoading} />
           <Text style={styles.disclaimer}>GitGPT can make mistakes.</Text>
@@ -646,10 +702,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
   },
-  codeBlockContainer: {
-    marginVertical: 8,
-    width: "100%",
-  },
+  // codeBlockContainer: {
+  //   marginVertical: 8,
+  //   width: "100%",
+  // },
   loadingContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -677,6 +733,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: "italic",
     marginTop: 8,
+  },
+
+  // Code Block Styles
+  codeBlockContainer: {
+    marginVertical: 12,
+    borderRadius: 8,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#333",
+  },
+  codeBlockHeader: {
+    flexDirection: "row",
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+  },
+  codeLanguageLabel: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+    opacity: 0.7,
+  },
+  codeScrollContainer: {
+    maxHeight: 300, // Limit max height of code blocks
+  },
+  codeContentContainer: {
+    flexDirection: "row",
+    padding: 10,
+    minWidth: "100%",
+  },
+  lineNumbersColumn: {
+    marginRight: 12,
+    paddingRight: 8,
+    alignItems: "flex-end",
+    borderRightWidth: 1,
+    borderRightColor: "rgba(255, 255, 255, 0.1)",
+  },
+  lineNumber: {
+    fontSize: 12,
+    lineHeight: 20,
+    color: "#606366",
+    fontFamily: "monospace",
+    textAlign: "right",
+  },
+  codeTextColumn: {
+    flex: 1,
+  },
+  codeText: {
+    fontSize: 12,
+    lineHeight: 20,
+    color: "#A9B7C6",
+    fontFamily: "monospace",
+    padding: 0,
+  },
+  codeBlockFooter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.1)",
+  },
+  codeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 6,
+    borderRadius: 4,
+    marginLeft: 8,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  codeButtonText: {
+    color: "#FFFFFF",
+    marginLeft: 4,
+    fontSize: 12,
   },
 });
 

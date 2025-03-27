@@ -84,7 +84,7 @@ const GitHubLoginScreen = () => {
               onChangeText={setPassword}
               secureTextEntry
               placeholder="******"
-              placeholderTextColor={colors.text + "80"} // Add transparency
+              placeholderTextColor={colors.text + "80"}
             />
           </View>
         </View>

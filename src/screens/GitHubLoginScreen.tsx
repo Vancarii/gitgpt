@@ -6,11 +6,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
 import { useGitHub } from "../context/GitHubContext";
 import type { RootStackParamList } from "../../App";
@@ -29,11 +27,9 @@ const GitHubLoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
-    // This would be a real authentication in a production app
-    // just make it look real but its not
     setIsLoading(true);
 
-    // Simulate API call delay with lol
+    // Simulate API call delay
     setTimeout(() => {
       setIsLoading(false);
       setIsConnected(true);
@@ -44,63 +40,70 @@ const GitHubLoginScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Icon name="github" size={60} color={colors.text} />
-        <Text
-          style={[
-            styles.headerText,
-            { color: colors.text, fontFamily: "OPTIDanley-Medium" },
-          ]}
-        >
+        <Text style={[styles.headerText, { color: colors.text }]}>
           Sign in to GitHub
         </Text>
       </View>
 
       <View style={styles.formContainer}>
-        <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Username or email address
           </Text>
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="e.g., Vancarii"
+              placeholderTextColor={colors.text + "80"} // Add transparency
+            />
+          </View>
         </View>
 
-        <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Password
           </Text>
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="******"
+              placeholderTextColor={colors.text + "80"} // Add transparency
+            />
+          </View>
         </View>
 
         <TouchableOpacity
-          style={[styles.signInButton, { opacity: isLoading ? 0.7 : 1 }]}
+          style={[
+            styles.signInButton,
+            {
+              backgroundColor: colors.accent,
+              opacity: isLoading ? 0.7 : 1,
+            },
+          ]}
           onPress={handleLogin}
           disabled={isLoading}
         >
-          <Text
-            style={[
-              styles.signInButtonText,
-              { fontFamily: "OPTIDanley-Medium" },
-            ]}
-          >
+          <Text style={[styles.signInButtonText, { color: colors.buttonText }]}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Text>
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.footer}>
-        <Text style={{ color: colors.text, opacity: 0.8 }}>
-          New to GitHub? <Text style={styles.link}>Create an account</Text>.
-        </Text>
       </View>
     </View>
   );
@@ -121,42 +124,40 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "500",
     marginTop: 16,
+    fontFamily: "OPTIDanley-Medium",
   },
   formContainer: {
     width: "100%",
     maxWidth: 400,
   },
-  inputContainer: {
-    marginBottom: 16,
-    borderRadius: 6,
-    padding: 16,
+  inputWrapper: {
+    marginBottom: 24,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "500",
-    marginBottom: 8,
+    marginBottom: 4,
+    fontFamily: "OPTIDanley-Medium",
+  },
+  inputContainer: {
+    borderRadius: 6,
+    borderWidth: 1,
+    padding: 12,
   },
   input: {
-    fontSize: 16,
-    height: 24,
+    fontSize: 14,
+    fontFamily: "OPTIDanley-Medium",
   },
   signInButton: {
-    backgroundColor: "#2EA043",
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
     marginTop: 16,
   },
   signInButtonText: {
-    color: "#FFFFFF",
     fontWeight: "500",
     fontSize: 16,
-  },
-  footer: {
-    marginTop: 40,
-  },
-  link: {
-    color: "#2EA043",
+    fontFamily: "OPTIDanley-Medium",
   },
 });
 

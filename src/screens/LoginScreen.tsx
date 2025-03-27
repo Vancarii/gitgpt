@@ -6,11 +6,9 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import type { RootStackParamList } from "../../App";
@@ -29,7 +27,6 @@ const LoginScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
-    // This would be a real authentication in a production app
     setIsLoading(true);
 
     // Simulate API call delay
@@ -44,54 +41,67 @@ const LoginScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Icon name="message-square" size={60} color={colors.text} />
-        <Text
-          style={[
-            styles.headerText,
-            { color: colors.text, fontFamily: "OPTIDanley-Medium" },
-          ]}
-        >
+        <Text style={[styles.headerText, { color: colors.text }]}>
           Sign in to GitGPT
         </Text>
       </View>
 
       <View style={styles.formContainer}>
-        <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Username
           </Text>
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            value={usernameInput}
-            onChangeText={setUsernameInput}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={usernameInput}
+              onChangeText={setUsernameInput}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="e.g., john_doe"
+              placeholderTextColor={colors.text + "80"} // Add transparency
+            />
+          </View>
         </View>
 
-        <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
+        <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Password
           </Text>
-          <TextInput
-            style={[styles.input, { color: colors.text }]}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
+          <View
+            style={[
+              styles.inputContainer,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <TextInput
+              style={[styles.input, { color: colors.text }]}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="Enter your password"
+              placeholderTextColor={colors.text + "80"} // Add transparency
+            />
+          </View>
         </View>
 
         <TouchableOpacity
-          style={[styles.signInButton, { opacity: isLoading ? 0.7 : 1 }]}
+          style={[
+            styles.signInButton,
+            {
+              backgroundColor: colors.accent,
+              opacity: isLoading ? 0.7 : 1,
+            },
+          ]}
           onPress={handleLogin}
           disabled={isLoading}
         >
-          <Text
-            style={[
-              styles.signInButtonText,
-              { fontFamily: "OPTIDanley-Medium" },
-            ]}
-          >
+          <Text style={[styles.signInButtonText, { color: colors.buttonText }]}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Text>
         </TouchableOpacity>
@@ -99,7 +109,11 @@ const LoginScreen = () => {
 
       <View style={styles.footer}>
         <Text style={{ color: colors.text, opacity: 0.8 }}>
-          New to GitGPT? <Text style={styles.link}>Create an account</Text>.
+          New to GitGPT?{" "}
+          <Text style={[styles.link, { color: colors.accent }]}>
+            Create an account
+          </Text>
+          .
         </Text>
       </View>
     </View>
@@ -121,42 +135,47 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "500",
     marginTop: 16,
+    fontFamily: "OPTIDanley-Medium",
   },
   formContainer: {
     width: "100%",
     maxWidth: 400,
   },
-  inputContainer: {
-    marginBottom: 16,
-    borderRadius: 6,
-    padding: 16,
+  inputWrapper: {
+    marginBottom: 24,
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: "500",
-    marginBottom: 8,
+    marginBottom: 4,
+    fontFamily: "OPTIDanley-Medium",
+  },
+  inputContainer: {
+    borderRadius: 6,
+    borderWidth: 1,
+    padding: 12,
   },
   input: {
-    fontSize: 16,
-    height: 24,
+    fontSize: 14,
+    fontFamily: "OPTIDanley-Medium",
   },
   signInButton: {
-    backgroundColor: "#2EA043",
     padding: 12,
     borderRadius: 6,
     alignItems: "center",
     marginTop: 16,
   },
   signInButtonText: {
-    color: "#FFFFFF",
     fontWeight: "500",
     fontSize: 16,
+    fontFamily: "OPTIDanley-Medium",
   },
   footer: {
     marginTop: 40,
   },
   link: {
-    color: "#2EA043",
+    fontWeight: "500",
+    fontFamily: "OPTIDanley-Medium",
   },
 });
 

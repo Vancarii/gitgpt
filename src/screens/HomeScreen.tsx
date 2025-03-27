@@ -115,9 +115,7 @@ const HomeScreen = () => {
   // show the popup
   const handleUnavailableFeature = () => {
     showPopup({
-      title: "We're sorry!",
-      description: "This page is not available yet, please check back later",
-      buttonText: "Close",
+      // Use default values
     });
   };
 

@@ -20,7 +20,8 @@ export const PopupProvider: React.FC<{ children: ReactNode }> = ({
   const [visible, setVisible] = useState(false);
   const [options, setOptions] = useState<PopupOptions>({
     title: "We're sorry!",
-    description: "This page is not available yet, please check back later",
+    description:
+      "This page is not available yet, please come back when there is an update.",
     buttonText: "Close",
   });
 

@@ -236,7 +236,7 @@ const CodeEditorScreen = () => {
           autoCapitalize="none"
           autoCorrect={false}
           spellCheck={false}
-          returnKeyType="enter"
+          returnKeyType="next"
           textAlignVertical="top"
           numberOfLines={lines.length}
         />
@@ -417,7 +417,6 @@ const styles = StyleSheet.create({
     padding: 0,
     minHeight: 300,
     width: "100%",
-    whiteSpace: "pre",
   },
   highlightOverlay: {
     position: "absolute",

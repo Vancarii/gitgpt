@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,103 +8,27 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
-  FlatList,
 } from "react-native";
-import {
-  useNavigation,
-  type CompositeNavigationProp,
-} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { DrawerNavigationProp } from "@react-navigation/drawer";
 import { useTheme } from "../context/ThemeContext";
-import ActionButton from "../components/ActionButton";
 import InputBar from "../components/InputBar";
-import RepositoryCard from "../components/RepositoryCard";
-import CodeBlock from "../components/CodeBlock";
 import type { RootStackParamList, DrawerParamList } from "../../App";
-import CustomText from "../components/CustomText";
 import { useGitHub } from "../context/GitHubContext";
 import { usePopup } from "../context/PopupContext";
 import { useAuth } from "../context/AuthContext";
-import { Feather as Icon } from "@expo/vector-icons";
-
-// TEMPORARY BUTTON TO NAVIGATE TO THE CODE EDITOR
-// import NavigateToCodeEditorButton from "../components/TempButton";
+import { Message } from "../types/ChatTypes";
+import { sampleRepositories } from "../data/Repositories";
+import { useChatHandlers } from "../handlers/ChatHandlers";
+import { WelcomeScreen } from "../components/WelcomeScreen";
+import { MessageComponent } from "../components/MessageComponent";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
   DrawerNavigationProp<DrawerParamList>
 >;
-
-interface CodeSection {
-  code: string;
-  language?: string;
-}
-
-type Message = {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-  // Optional properties for special message types
-  type?: "repository-list" | "repository-detail" | "code-response";
-  repositoryList?: Array<{
-    id: string;
-    name: string;
-    language: string;
-    stars: number;
-    forks: number;
-    description: string;
-    isPrivate: boolean;
-  }>;
-  repositoryName?: string;
-  codeSections?: CodeSection[];
-};
-
-// Sample repositories
-const repositories = [
-  {
-    id: "1",
-    name: "react-native-app",
-    language: "TypeScript",
-    stars: 124,
-    forks: 38,
-    description:
-      "A React Native application for mobile development with TypeScript support",
-    isPrivate: false,
-  },
-  {
-    id: "2",
-    name: "personal-website",
-    language: "JavaScript",
-    stars: 15,
-    forks: 3,
-    description:
-      "Personal portfolio website built with Next.js and Tailwind CSS",
-    isPrivate: true,
-  },
-  {
-    id: "3",
-    name: "data-visualization-tool",
-    language: "Python",
-    stars: 87,
-    forks: 12,
-    description:
-      "A tool for visualizing complex datasets using matplotlib and seaborn",
-    isPrivate: false,
-  },
-  {
-    id: "4",
-    name: "algorithm-challenges",
-    language: "C++",
-    stars: 45,
-    forks: 7,
-    description:
-      "Solutions to various algorithm challenges and competitive programming problems",
-    isPrivate: false,
-  },
-];
 
 const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -116,470 +40,54 @@ const HomeScreen = () => {
   const { showPopup } = usePopup();
   const { isLoggedIn } = useAuth();
 
-  // show the popup
-  const handleUnavailableFeature = () => {
-    showPopup({
-      // Use default values
-    });
-  };
-
-  // Function to extract code blocks from a string
-  // Looks for code blocks in the triple back ticks
-  const extractCodeBlocks = (
-    text: string
-  ): { content: string; codeSections: CodeSection[] } => {
-    // Regex to match code blocks: ```language\ncode\n```
-    const codeBlockRegex = /```([a-zA-Z]*)\n([\s\S]*?)```/g;
-
-    let match;
-    const codeSections: CodeSection[] = [];
-    let lastIndex = 0;
-    let newContent = "";
-
-    while ((match = codeBlockRegex.exec(text)) !== null) {
-      // Add text before the code block
-      newContent += text.slice(lastIndex, match.index);
-
-      // Add a placeholder for the code block
-      newContent += `[CODE_BLOCK_${codeSections.length}]`;
-
-      // Save the code block
-      codeSections.push({
-        language: match[1] || "text",
-        code: match[2].trim(),
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Add remaining text
-    newContent += text.slice(lastIndex);
-
-    return {
-      content: newContent,
-      codeSections,
-    };
-  };
-
-  // Function to call OpenAI API
-  const callOpenAI = async (userMessage: string) => {
-    try {
-      setIsLoading(true);
-
-      // Skip actual API call if it's a repository-related command
-      if (
-        userMessage.toLowerCase().includes("import repository") ||
-        userMessage.toLowerCase().includes("github")
-      ) {
-        // Add repository list as a response
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now().toString() + "-assistant",
-              content:
-                "Sure thing! Here are your repositories, choose one to link to this chat:",
-              role: "assistant",
-              timestamp: new Date(),
-              type: "repository-list",
-              repositoryList: repositories,
-            },
-          ]);
-          setIsLoading(false);
-        }, 1000);
-        return;
-      }
-
-      // Your API endpoint
-      const response = await fetch(
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:3000/api/chat"
-          : "/api/chat",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages
-                .filter((msg) => !msg.type || msg.type === "code-response")
-                .map((msg) => ({
-                  role: msg.role,
-                  content: msg.content,
-                })),
-              { role: "user", content: userMessage },
-            ],
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.choices && data.choices.length > 0) {
-        const assistantResponse = data.choices[0].message.content;
-
-        // Check if response contains code blocks
-        const { content, codeSections } = extractCodeBlocks(assistantResponse);
-
-        // Add the assistant's response to messages
-        if (codeSections.length > 0) {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now().toString() + "-assistant",
-              content: content,
-              role: "assistant",
-              timestamp: new Date(),
-              type: "code-response",
-              codeSections: codeSections,
-            },
-          ]);
-        } else {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now().toString() + "-assistant",
-              content: assistantResponse,
-              role: "assistant",
-              timestamp: new Date(),
-            },
-          ]);
-        }
-      } else {
-        console.error("Unexpected API response:", data);
-      }
-    } catch (error) {
-      console.error("Error calling OpenAI API:", error);
-    } finally {
-      setIsLoading(false);
-      // Scroll to bottom after message is added
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
-  };
-
-  const handleSend = async (text: string) => {
-    if (!text.trim()) return;
-
-    // Add user message to the state
-    const userMessage: Message = {
-      id: Date.now().toString() + "-user",
-      content: text,
-      role: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Scroll to bottom after message is added
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-
-    // Call OpenAI API
-    await callOpenAI(text);
-  };
-
-  const handleRepositorySelect = (repo: { id: string; name: string }) => {
-    // Add user selection message
-    setMessages((prev) => [
-      ...prev.filter((msg) => msg.type !== "repository-list"),
-      {
-        id: Date.now().toString() + "-user",
-        content: `I want to use ${repo.name}`,
-        role: "user",
-        timestamp: new Date(),
-      },
-    ]);
-
-    // Add a simulated response with repository details
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString() + "-assistant",
-          content: `Successfully connected to ${repo.name}! What would you like me to do next?`,
-          role: "assistant",
-          timestamp: new Date(),
-          type: "repository-detail",
-          repositoryName: repo.name,
-        },
-      ]);
-
-      // Scroll to bottom after message is added
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }, 800);
-  };
-
-  const handleImportRepository = () => {
-    // Directly add a message with repository list
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString() + "-user",
-        content: "I want to import a repository",
-        role: "user",
-        timestamp: new Date(),
-      },
-      {
-        id: Date.now().toString() + "-assistant",
-        content:
-          "Sure thing! Here are your repositories, choose one to link to this chat:",
-        role: "assistant",
-        timestamp: new Date(),
-        type: "repository-list",
-        repositoryList: repositories,
-      },
-    ]);
-
-    // Scroll to bottom after messages are added
+  const scrollToBottom = () => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
 
-  const handleViewFullCode = (code: string) => {
-    // Navigate to code editor screen with the code
-    navigation.navigate("CodeEditor", {
-      fileName: "file1.py",
-    });
-  };
-
-  const handleCopyCode = () => {
-    console.log("Code copied to clipboard");
-    // Implement clipboard functionality
-  };
-
-  // check login status before GitHub login
-  const handleGitHubLogin = () => {
-    if (!isLoggedIn) {
-      // User not logged in to app, show popup
-      showPopup({
-        title: "Login Required",
-        description:
-          "Please log in to your account first before connecting to GitHub.",
-        buttonText: "Close",
-      });
-
-      navigation.navigate("Login");
-    } else {
-      // User is logged in, proceed to GitHub login
-      navigation.navigate("GitHubLogin");
-    }
-  };
-
-  const renderRepositoryList = (message: Message) => {
-    if (!message.repositoryList) return null;
-
-    return (
-      <View style={styles.specialContentContainer}>
-        <FlatList
-          data={message.repositoryList}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <RepositoryCard
-              name={item.name}
-              language={item.language}
-              stars={item.stars}
-              forks={item.forks}
-              description={item.description}
-              isPrivate={item.isPrivate}
-              onPress={() => handleRepositorySelect(item)}
-            />
-          )}
-          scrollEnabled={false}
-          contentContainerStyle={styles.listContent}
-        />
-      </View>
-    );
-  };
-
-  const renderRepositoryDetail = (message: Message) => {
-    if (!message.repositoryName) return null;
-
-    return (
-      <View style={styles.specialContentContainer}>
-        <Text style={[styles.repoConnectedText, { color: colors.text }]}>
-          You can now ask questions about any file in {message.repositoryName}.
-        </Text>
-      </View>
-    );
-  };
-
-  const renderCodeResponse = (message: Message) => {
-    if (!message.codeSections || message.codeSections.length === 0) return null;
-
-    // Split the message content by code block placeholders
-    const contentParts = message.content.split(/\[CODE_BLOCK_(\d+)\]/);
-
-    return (
-      <View style={styles.messageTextContainer}>
-        {contentParts.map((part, index) => {
-          if (index % 2 === 0) {
-            // This is regular text
-            return part ? (
-              <Text
-                key={`text-${index}`}
-                style={[styles.messageText, { color: colors.text }]}
-              >
-                {part}
-              </Text>
-            ) : null;
-          } else {
-            // This is a code block placeholder, get the corresponding code
-            const codeIndex = parseInt(part);
-            const codeSection = message.codeSections?.[codeIndex];
-
-            if (!codeSection) return null;
-
-            return (
-              <View key={`code-${index}`} style={styles.codeBlockContainer}>
-                <View
-                  style={[
-                    styles.codeBlockHeader,
-                    { backgroundColor: colors.codeBackground },
-                  ]}
-                >
-                  <Text style={styles.codeLanguageLabel}>
-                    {codeSection.language || "text"}
-                  </Text>
-                </View>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={[
-                    styles.codeScrollContainer,
-                    { backgroundColor: colors.codeBackground },
-                  ]}
-                >
-                  <View style={styles.codeContentContainer}>
-                    {/* Line Numbers Column */}
-                    <View style={styles.lineNumbersColumn}>
-                      {codeSection.code.split("\n").map((_, lineIndex) => (
-                        <Text key={lineIndex} style={styles.lineNumber}>
-                          {lineIndex + 1}
-                        </Text>
-                      ))}
-                    </View>
-
-                    {/* Code Content */}
-                    <View style={styles.codeTextColumn}>
-                      <Text style={styles.codeText}>{codeSection.code}</Text>
-                    </View>
-                  </View>
-                </ScrollView>
-                <View
-                  style={[
-                    styles.codeBlockFooter,
-                    { backgroundColor: colors.codeBackground },
-                  ]}
-                >
-                  <TouchableOpacity
-                    style={styles.codeButton}
-                    onPress={handleCopyCode}
-                  >
-                    <Icon name="copy" size={16} color="#FFFFFF" />
-                    <Text style={styles.codeButtonText}>Copy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.codeButton}
-                    onPress={() => handleViewFullCode(codeSection.code)}
-                  >
-                    <Text style={styles.codeButtonText}>Open in Editor</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            );
-          }
-        })}
-      </View>
-    );
-  };
+  const {
+    handleSend,
+    handleRepositorySelect,
+    handleImportRepository,
+    handleViewFullCode,
+    handleCopyCode,
+    handleGitHubLogin,
+    handleUnavailableFeature,
+  } = useChatHandlers(
+    navigation,
+    setMessages,
+    setIsLoading,
+    scrollToBottom,
+    sampleRepositories,
+    isLoggedIn,
+    showPopup
+  );
 
   const renderMessages = () => {
     if (messages.length === 0) {
       return (
-        <View style={styles.welcomeContainer}>
-          <CustomText style={[styles.welcomeText, { color: colors.text }]}>
-            Welcome, how can I help you today?
-          </CustomText>
-
-          <View style={styles.actionsContainer}>
-            <ActionButton
-              label="Create image"
-              icon="image"
-              onPress={handleUnavailableFeature}
-              style={styles.actionButton}
-            />
-
-            <ActionButton
-              label="Help me write"
-              icon="edit-2"
-              onPress={handleUnavailableFeature}
-              style={styles.actionButton}
-            />
-
-            <ActionButton
-              label="Brainstorm"
-              icon="box"
-              onPress={handleUnavailableFeature}
-              style={styles.actionButton}
-            />
-
-            {isConnected ? (
-              <ActionButton
-                label="Import Repository"
-                icon="github"
-                onPress={handleImportRepository}
-                style={styles.importButton}
-              />
-            ) : (
-              <ActionButton
-                label="GitHub Login"
-                icon="github"
-                onPress={handleGitHubLogin}
-                style={styles.gitHubButton}
-              />
-            )}
-          </View>
-        </View>
+        <WelcomeScreen
+          textColor={colors.text}
+          isConnected={isConnected}
+          onUnavailableFeature={handleUnavailableFeature}
+          onImportRepository={handleImportRepository}
+          onGitHubLogin={handleGitHubLogin}
+        />
       );
     }
 
     return (
       <View style={styles.messagesContainer}>
         {messages.map((message) => (
-          <View key={message.id}>
-            <View
-              style={[
-                styles.messageWrapper,
-                message.role === "user"
-                  ? styles.userMessage
-                  : styles.assistantMessage,
-              ]}
-            >
-              {message.type === "code-response" ? (
-                renderCodeResponse(message)
-              ) : (
-                <Text style={[styles.messageText, { color: colors.text }]}>
-                  {message.content}
-                </Text>
-              )}
-            </View>
-
-            {/* Render special content based on message type */}
-            {message.role === "assistant" &&
-              message.type === "repository-list" &&
-              renderRepositoryList(message)}
-
-            {message.role === "assistant" &&
-              message.type === "repository-detail" &&
-              renderRepositoryDetail(message)}
-          </View>
+          <MessageComponent
+            key={message.id}
+            message={message}
+            colors={colors}
+            onCopy={handleCopyCode}
+            onViewFullCode={handleViewFullCode}
+            onSelectRepository={handleRepositorySelect}
+          />
         ))}
 
         {isLoading && (
@@ -610,9 +118,6 @@ const HomeScreen = () => {
           {renderMessages()}
         </ScrollView>
 
-        {/* TEMPORARY BUTTON TO NAVIGATE TO THE CODE EDITOR */}
-        {/* <NavigateToCodeEditorButton /> */}
-
         <View style={styles.inputContainer}>
           <InputBar onSend={handleSend} disabled={isLoading} />
           <Text style={styles.disclaimer}>GitGPT can make mistakes.</Text>
@@ -638,74 +143,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 16,
   },
-  welcomeContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  welcomeText: {
-    fontSize: 28,
-    textAlign: "center",
-    marginBottom: 40,
-  },
-  actionsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginHorizontal: 16,
-    width: "100%",
-  },
-  actionButton: {
-    width: "48%",
-    marginBottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  importButton: {
-    width: "48%",
-    marginBottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#1F6E6D",
-    padding: 2,
-  },
-  gitHubButton: {
-    width: "48%",
-    marginBottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#6e5494",
-    padding: 2,
-  },
   messagesContainer: {
     width: "100%",
   },
-  messageWrapper: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    maxWidth: "85%",
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: "#444654",
-  },
-  assistantMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "#343541",
-  },
-  messageTextContainer: {
-    width: "100%",
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  // codeBlockContainer: {
-  //   marginVertical: 8,
-  //   width: "100%",
-  // },
   loadingContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -720,92 +160,6 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 4,
     marginBottom: 8,
-  },
-  specialContentContainer: {
-    width: "100%",
-    marginTop: -8,
-    marginBottom: 16,
-  },
-  listContent: {
-    paddingVertical: 8,
-  },
-  repoConnectedText: {
-    fontSize: 14,
-    fontStyle: "italic",
-    marginTop: 8,
-  },
-
-  // Code Block Styles
-  codeBlockContainer: {
-    marginVertical: 12,
-    borderRadius: 8,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#333",
-  },
-  codeBlockHeader: {
-    flexDirection: "row",
-    padding: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
-  },
-  codeLanguageLabel: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "500",
-    opacity: 0.7,
-  },
-  codeScrollContainer: {
-    maxHeight: 300, // Limit max height of code blocks
-  },
-  codeContentContainer: {
-    flexDirection: "row",
-    padding: 10,
-    minWidth: "100%",
-  },
-  lineNumbersColumn: {
-    marginRight: 12,
-    paddingRight: 8,
-    alignItems: "flex-end",
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255, 255, 255, 0.1)",
-  },
-  lineNumber: {
-    fontSize: 12,
-    lineHeight: 20,
-    color: "#606366",
-    fontFamily: "monospace",
-    textAlign: "right",
-  },
-  codeTextColumn: {
-    flex: 1,
-  },
-  codeText: {
-    fontSize: 12,
-    lineHeight: 20,
-    color: "#A9B7C6",
-    fontFamily: "monospace",
-    padding: 0,
-  },
-  codeBlockFooter: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    padding: 8,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.1)",
-  },
-  codeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 6,
-    borderRadius: 4,
-    marginLeft: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  codeButtonText: {
-    color: "#FFFFFF",
-    marginLeft: 4,
-    fontSize: 12,
   },
 });
 

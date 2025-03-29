@@ -9,7 +9,8 @@ export const useChatHandlers = (
   scrollToBottom: () => void,
   repositories: Repository[],
   isLoggedIn: boolean,
-  showPopup: (options: any) => void
+  showPopup: (options: any) => void,
+  messages: Message[]
 ) => {
   const extractCodeBlocks = (
     text: string
@@ -38,11 +39,10 @@ export const useChatHandlers = (
     return { content: newContent, codeSections };
   };
 
-  // Inside the callOpenAI function in src/handlers/ChatHandlers.tsx
-  const callOpenAI = async (userMessage: string) => {
+    const callOpenAI = async (userMessage: string) => {
     try {
       setIsLoading(true);
-
+  
       // Skip actual API call if it's a repository-related command
       if (
         userMessage.toLowerCase().includes("import repository") ||
@@ -65,21 +65,23 @@ export const useChatHandlers = (
         }, 1000);
         return;
       }
-
+  
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
-
+  
       try {
+        // Create an array of messages without special types for the API
         const messagesForAPI = messages
           .filter((msg) => !msg.type || msg.type === "code-response")
           .map((msg) => ({
             role: msg.role,
             content: msg.content,
           }));
-
+  
+        // Make sure to use the correct API endpoint
         const response = await fetch(
           process.env.NODE_ENV === "development"
-            ? "http://localhost:8081/api/chat"
+            ? "http://localhost:8081/api/chat" // Make sure this matches your server port
             : "/api/chat",
           {
             method: "POST",
@@ -95,20 +97,20 @@ export const useChatHandlers = (
             signal: controller.signal,
           }
         );
-
+  
         clearTimeout(timeoutId);
-
+  
         if (!response.ok) {
           throw new Error(`ServerError:${response.status}`);
         }
-
+  
         const data = await response.json();
-
+  
         if (data.choices && data.choices.length > 0) {
           const assistantResponse = data.choices[0].message.content;
           const { content, codeSections } =
             extractCodeBlocks(assistantResponse);
-
+  
           setMessages((prev) => [
             ...prev,
             codeSections.length > 0
@@ -132,27 +134,20 @@ export const useChatHandlers = (
         }
       } catch (error) {
         clearTimeout(timeoutId);
-
-        // Handle network errors properly
-        if (
-          error.name === "AbortError" ||
-          error.message === "Network request failed" ||
-          error.message.includes("Failed to fetch") ||
-          error.message.includes("Network Error")
-        ) {
-          throw new Error("NetworkError");
-        }
-        throw error; // Re-throw other errors to be caught by the outer catch block
+  
+        // Re-throw for outer catch
+        throw error;
       }
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
-
-      let errorMessage = "Sorry, there was an error processing your request.";
-
+  
+      let errorMessage = "Sorry, there was an error processing your request. Please check your internet connection and try again.";
+  
       if (error instanceof Error) {
         if (
-          error.message === "NetworkError" ||
-          error.message.includes("Failed to fetch")
+          error.name === "AbortError" ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Network request failed"
         ) {
           errorMessage =
             "Network error: Please check your internet connection and try again.";
@@ -161,7 +156,7 @@ export const useChatHandlers = (
           errorMessage = `Server error (${statusCode}): The server is currently unavailable. Please try again later.`;
         }
       }
-
+  
       setMessages((prev) => [
         ...prev,
         {

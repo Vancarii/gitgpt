@@ -1,4 +1,3 @@
-// filepath: /Users/yechengwang/Desktop/SFU/Spring2025/CMPT363/group-project/gitgpt/src/components/chat/RepositoryListComponent.tsx
 import React from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Repository } from "../types/ChatTypes";

@@ -61,7 +61,8 @@ const HomeScreen = () => {
     scrollToBottom,
     sampleRepositories,
     isLoggedIn,
-    showPopup
+    showPopup,
+    messages
   );
 
   const renderMessages = () => {

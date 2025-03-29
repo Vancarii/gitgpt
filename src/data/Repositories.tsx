@@ -1,5 +1,5 @@
 // filepath: /Users/yechengwang/Desktop/SFU/Spring2025/CMPT363/group-project/gitgpt/src/data/repositories.ts
-import { Repository } from "../types/chat";
+import { Repository } from "../types/ChatTypes";
 
 export const sampleRepositories: Repository[] = [
   {

@@ -38,6 +38,7 @@ export const useChatHandlers = (
     return { content: newContent, codeSections };
   };
 
+  // Inside the callOpenAI function in src/handlers/ChatHandlers.tsx
   const callOpenAI = async (userMessage: string) => {
     try {
       setIsLoading(true);
@@ -65,77 +66,88 @@ export const useChatHandlers = (
         return;
       }
 
-      // Check for internet connectivity
-      try {
-        const connectionCheck = await fetch("https://www.google.com", {
-          method: "HEAD",
-          mode: "no-cors",
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
-        }).catch(() => null);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        if (!connectionCheck) {
+      try {
+        const messagesForAPI = messages
+          .filter((msg) => !msg.type || msg.type === "code-response")
+          .map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          }));
+
+        const response = await fetch(
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8081/api/chat"
+            : "/api/chat",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages: [
+                ...messagesForAPI,
+                { role: "user", content: userMessage },
+              ],
+            }),
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`ServerError:${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.choices && data.choices.length > 0) {
+          const assistantResponse = data.choices[0].message.content;
+          const { content, codeSections } =
+            extractCodeBlocks(assistantResponse);
+
+          setMessages((prev) => [
+            ...prev,
+            codeSections.length > 0
+              ? {
+                  id: Date.now().toString() + "-assistant",
+                  content: content,
+                  role: "assistant",
+                  timestamp: new Date(),
+                  type: "code-response",
+                  codeSections: codeSections,
+                }
+              : {
+                  id: Date.now().toString() + "-assistant",
+                  content: assistantResponse,
+                  role: "assistant",
+                  timestamp: new Date(),
+                },
+          ]);
+        } else {
+          throw new Error("UnexpectedResponse");
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        // Handle network errors properly
+        if (
+          error.name === "AbortError" ||
+          error.message === "Network request failed" ||
+          error.message.includes("Failed to fetch") ||
+          error.message.includes("Network Error")
+        ) {
           throw new Error("NetworkError");
         }
-      } catch (e) {
-        throw new Error("NetworkError");
-      }
-
-      // API endpoint
-      const response = await fetch(
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:3001/api/chat"
-          : "/api/chat",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messagesForAPI,
-              { role: "user", content: userMessage },
-            ],
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`ServerError:${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.choices && data.choices.length > 0) {
-        const assistantResponse = data.choices[0].message.content;
-        const { content, codeSections } = extractCodeBlocks(assistantResponse);
-
-        setMessages((prev) => [
-          ...prev,
-          codeSections.length > 0
-            ? {
-                id: Date.now().toString() + "-assistant",
-                content: content,
-                role: "assistant",
-                timestamp: new Date(),
-                type: "code-response",
-                codeSections: codeSections,
-              }
-            : {
-                id: Date.now().toString() + "-assistant",
-                content: assistantResponse,
-                role: "assistant",
-                timestamp: new Date(),
-              },
-        ]);
-      } else {
-        throw new Error("UnexpectedResponse");
+        throw error; // Re-throw other errors to be caught by the outer catch block
       }
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
 
-      let errorMessage =
-        "Sorry, there was an error processing your request. Please check your internet connection and try again.";
+      let errorMessage = "Sorry, there was an error processing your request.";
 
       if (error instanceof Error) {
         if (

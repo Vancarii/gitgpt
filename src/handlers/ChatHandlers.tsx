@@ -141,7 +141,7 @@ export const useChatHandlers = (
     } catch (error) {
       console.error("Error calling OpenAI API:", error);
   
-      let errorMessage = "Sorry, there was an error processing your request.";
+      let errorMessage = "Sorry, there was an error processing your request. Please check your internet connection and try again.";
   
       if (error instanceof Error) {
         if (

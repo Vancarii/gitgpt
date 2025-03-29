@@ -9,7 +9,8 @@ export const useChatHandlers = (
   scrollToBottom: () => void,
   repositories: Repository[],
   isLoggedIn: boolean,
-  showPopup: (options: any) => void
+  showPopup: (options: any) => void,
+  messages: Message[]
 ) => {
   const extractCodeBlocks = (
     text: string
@@ -71,8 +72,8 @@ export const useChatHandlers = (
 
       try {
         const messagesForAPI = messages
-          .filter((msg) => !msg.type || msg.type === "code-response")
-          .map((msg) => ({
+          .filter((msg: Message) => !msg.type || msg.type === "code-response")
+          .map((msg: Message) => ({
             role: msg.role,
             content: msg.content,
           }));
@@ -130,21 +131,22 @@ export const useChatHandlers = (
         } else {
           throw new Error("UnexpectedResponse");
         }
-      } catch (error) {
+      } catch (error: unknown) {
         clearTimeout(timeoutId);
 
         // Handle network errors properly
         if (
-          error.name === "AbortError" ||
-          error.message === "Network request failed" ||
-          error.message.includes("Failed to fetch") ||
-          error.message.includes("Network Error")
+          error instanceof Error &&
+          (error.name === "AbortError" ||
+            error.message === "Network request failed" ||
+            error.message.includes("Failed to fetch") ||
+            error.message.includes("Network Error"))
         ) {
           throw new Error("NetworkError");
         }
         throw error; // Re-throw other errors to be caught by the outer catch block
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error calling OpenAI API:", error);
 
       let errorMessage = "Sorry, there was an error processing your request.";

@@ -39,7 +39,6 @@ export const useChatHandlers = (
     return { content: newContent, codeSections };
   };
 
-  // Inside the callOpenAI function in src/handlers/ChatHandlers.tsx
   const callOpenAI = async (userMessage: string) => {
     try {
       setIsLoading(true);
@@ -71,6 +70,7 @@ export const useChatHandlers = (
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       try {
+        // Create an array of messages without special types for the API
         const messagesForAPI = messages
           .filter((msg: Message) => !msg.type || msg.type === "code-response")
           .map((msg: Message) => ({
@@ -78,9 +78,10 @@ export const useChatHandlers = (
             content: msg.content,
           }));
 
+        // Make sure to use the correct API endpoint
         const response = await fetch(
           process.env.NODE_ENV === "development"
-            ? "http://localhost:8081/api/chat"
+            ? "http://localhost:8081/api/chat" // Make sure this matches your server port
             : "/api/chat",
           {
             method: "POST",
@@ -149,12 +150,14 @@ export const useChatHandlers = (
     } catch (error: unknown) {
       console.error("Error calling OpenAI API:", error);
 
-      let errorMessage = "Sorry, there was an error processing your request.";
+      let errorMessage =
+        "Sorry, there was an error processing your request. Please check your internet connection and try again.";
 
       if (error instanceof Error) {
         if (
-          error.message === "NetworkError" ||
-          error.message.includes("Failed to fetch")
+          error.name === "AbortError" ||
+          error.message.includes("Failed to fetch") ||
+          error.message === "Network request failed"
         ) {
           errorMessage =
             "Network error: Please check your internet connection and try again.";

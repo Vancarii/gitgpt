@@ -1,4 +1,3 @@
-// filepath: /Users/yechengwang/Desktop/SFU/Spring2025/CMPT363/group-project/gitgpt/src/components/chat/RepositoryDetailComponent.tsx
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 

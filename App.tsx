@@ -27,6 +27,8 @@ import UserSettingsScreen from "./src/screens/UserSettingsScreen";
 import MobileSimulator from "./src/components/MobileSimulator";
 import { PopupProvider } from "./src/context/PopupContext";
 import WebLayout from "./src/components/WebLayout";
+import CommitScreen from "./src/screens/CommitScreen";
+import CommitConfirmScreen from "./src/screens/CommitConfirmScreen";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
@@ -38,6 +40,8 @@ export type RootStackParamList = {
   GitHubLogin: undefined;
   Login: undefined;
   UserSettings: undefined;
+  Commit: undefined;
+  CommitConfirm: undefined; // Add CommitConfirm screen
 };
 
 export type DrawerParamList = {
@@ -189,6 +193,22 @@ const MainStackNavigator = () => {
           title: "Settings",
           presentation: "modal",
           animation: "slide_from_bottom",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Commit"
+        component={CommitScreen}
+        options={{
+          title: "Commit",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CommitConfirm"
+        component={CommitConfirmScreen}
+        options={{
+          title: "Commit Confirmation",
           headerShown: false,
         }}
       />

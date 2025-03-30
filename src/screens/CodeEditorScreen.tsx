@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  TouchableWithoutFeedback,
+import { useState, useRef, useEffect } from "react";
+import { 
+  View, ScrollView, Text, TouchableOpacity, TextInput, KeyboardAvoidingView, 
+  Platform, Keyboard, TouchableWithoutFeedback, Modal, StyleSheet,
+  StyleProp, ViewStyle, FlatList
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
@@ -24,6 +17,59 @@ import {
 } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+// First, let's add a custom hook for hover effects on web
+const useHover = () => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const onHoverIn = () => setIsHovered(true);
+  const onHoverOut = () => setIsHovered(false);
+  
+  return { isHovered, onHoverIn, onHoverOut };
+};
+
+// Properly typed component for buttons with hover effect
+interface HoverButtonProps {
+  style?: StyleProp<ViewStyle>;
+  onPress: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+
+const HoverButton = ({ style, onPress, disabled = false, children }: HoverButtonProps) => {
+  const { isHovered, onHoverIn, onHoverOut } = useHover();
+  
+  return (
+    <TouchableOpacity
+      style={[
+        style, 
+        isHovered && Platform.OS === 'web' && styles.buttonHovered,
+        disabled && styles.buttonDisabled
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      {...(Platform.OS === 'web' ? {
+        // @ts-ignore - These are web-specific props
+        onMouseEnter: onHoverIn,
+        onMouseLeave: onHoverOut
+      } : {})}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+};
+
+// Add navigation type
+type CodeEditorScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "CodeEditor"
+>;
+
+// Define the route prop type
+type CodeEditorScreenRouteProp = RouteProp<RootStackParamList, "CodeEditor">;
+type CommitScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Commit"
+>;
 const initialCode = `#include <iostream>
 #include <vector>
 #include <queue>
@@ -71,15 +117,6 @@ public:
     }
 };`;
 
-// Add navigation type
-type CodeEditorScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "CodeEditor"
->;
-
-// Define the route prop type
-type CodeEditorScreenRouteProp = RouteProp<RootStackParamList, "CodeEditor">;
-
 const CodeEditorScreen = () => {
   const route = useRoute<CodeEditorScreenRouteProp>();
   const navigation = useNavigation<CodeEditorScreenNavigationProp>();
@@ -88,6 +125,12 @@ const CodeEditorScreen = () => {
   const [highlighted, setHighlighted] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
+  const [codeHistory, setCodeHistory] = useState<string[]>([initialCode]); // For undo/redo
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [showShareDropdown, setShowShareDropdown] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const shareButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
+  const [shareButtonPosition, setShareButtonPosition] = useState({ top: 0, right: 0 });
 
   // Define which lines to highlight (line numbers are 0-indexed in the array)
   const highlightStartLine = 17; // Line 22 (0-indexed)
@@ -100,18 +143,6 @@ const CodeEditorScreen = () => {
     Keyboard.dismiss();
   };
 
-  // Function to handle accepting changes
-  const handleAcceptChanges = () => {
-    setHighlighted(false);
-    // Here you would typically save the changes
-  };
-
-  // Function to handle declining changes
-  const handleDeclineChanges = () => {
-    setHighlighted(false);
-    setCode(initialCode);
-  };
-
   // Insert special character at current cursor position
   const insertAtCursor = (char: string) => {
     if (textInputRef.current && textInputRef.current.isFocused()) {
@@ -122,39 +153,110 @@ const CodeEditorScreen = () => {
     }
   };
 
-  // Render line numbers for reference (not actual TextInput line numbers)
-  const renderLineNumbers = () => {
-    const lines = code.split("\n");
-    return (
-      <View style={styles.lineNumbers}>
-        {lines.map((_, index) => {
-          // Determine if this line should be highlighted
-          const isHighlighted =
-            highlighted &&
-            index >= highlightStartLine &&
-            index <= highlightEndLine;
+  const highlightedCodeRef = useRef<string | null>(null);
 
-          return (
-            <View
-              key={index}
-              style={[
-                styles.lineNumberContainer,
-                isHighlighted && styles.highlightedLineNumber,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.lineNumber,
-                  isHighlighted && { color: "#FFFFFF" },
-                ]}
-              >
-                {index + 1}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
-    );
+  useEffect(() => {
+    if (showShareDropdown && shareButtonRef.current && Platform.OS === 'web') {
+      // @ts-ignore - This is web-specific code
+      const rect = shareButtonRef.current.getBoundingClientRect();
+      setShareButtonPosition({
+        top: rect.bottom + window.scrollY, // Add scroll position
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [showShareDropdown]);
+
+  // Function to handle accepting changes
+  const handleAcceptChanges = () => {
+    // Save to history for undo
+    setCodeHistory(prev => [...prev.slice(0, historyIndex + 1), code]);
+    setHistoryIndex(prev => prev + 1);
+    
+    // Keep the code but remove highlighting
+    setHighlighted(false);
+  };
+
+  // Function to handle declining changes
+  const handleDeclineChanges = () => {
+    // Save to history for undo
+    setCodeHistory(prev => [...prev.slice(0, historyIndex + 1), code]);
+    setHistoryIndex(prev => prev + 1);
+    
+    // Remove the highlighted code lines completely
+    const lines = code.split('\n');
+    const newLines = [...lines.slice(0, highlightStartLine), ...lines.slice(highlightEndLine + 1)];
+    
+    // Set the new code and remove highlight
+    setCode(newLines.join('\n'));
+    setHighlighted(false);
+  };
+
+  // Undo the last action
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(prev => prev - 1);
+      setCode(codeHistory[historyIndex - 1]);
+      // If we had removed highlighting, bring it back
+      if (!highlighted) {
+        setHighlighted(true);
+      }
+    }
+  };
+
+  // Redo the undone action
+  const handleRedo = () => {
+    if (historyIndex < codeHistory.length - 1) {
+      setHistoryIndex(prev => prev + 1);
+      setCode(codeHistory[historyIndex + 1]);
+    }
+  };
+
+  // Toggle share dropdown
+  const toggleShareDropdown = () => {
+    setShowShareDropdown(prev => !prev);
+  };
+
+  // Toggle history modal
+  const toggleHistoryModal = () => {
+    setShowHistoryModal(prev => !prev);
+  };
+
+  // Restore code from history
+  const restoreFromHistory = (index: number) => {
+    setCode(codeHistory[index]);
+    setHistoryIndex(index);
+    setShowHistoryModal(false);
+  };
+
+  // Handle share actions
+  const handleShareAction = (action: string) => {
+    // Close dropdown
+    setShowShareDropdown(false);
+    
+    // Implement actions
+    switch (action) {
+      case 'pushToMain':
+        console.log('Pushing to main branch...');
+        navigation.navigate("Commit");
+        // Implement actual push logic
+        break;
+      case 'pushToNewBranch':
+        console.log('Pushing to new branch...');
+        // Implement new branch push logic
+        break;
+      case 'addToRepository':
+        console.log('Adding file to repository...');
+        // Implement file add logic
+        break;
+      case 'revertChanges':
+        console.log('Reverting all changes...');
+        setCode(initialCode);
+        setHighlighted(true);
+        // Add to history
+        setCodeHistory(prev => [...prev.slice(0, historyIndex + 1), initialCode]);
+        setHistoryIndex(prev => prev + 1);
+        break;
+    }
   };
 
   // Render highlighted section bars if highlighted state is true
@@ -165,8 +267,7 @@ const CodeEditorScreen = () => {
       <View style={styles.highlightedSectionContainer}>
         <View style={styles.highlightedSectionHeader}>
           <Text style={styles.highlightedSectionTitle}>
-            Suggested changes in lines {highlightStartLine + 1} to{" "}
-            {highlightEndLine + 1}
+            Suggested code changes
           </Text>
           <View style={styles.highlightedSectionButtons}>
             <TouchableOpacity
@@ -187,7 +288,199 @@ const CodeEditorScreen = () => {
     );
   };
 
-  // Render key buttons for common code symbols
+  // Updated code for share dropdown to position correctly
+  const renderShareDropdown = () => {
+    if (!showShareDropdown) return null;
+    
+    return (
+      <Modal
+        transparent={true}
+        visible={showShareDropdown}
+        animationType="fade"
+        onRequestClose={() => setShowShareDropdown(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowShareDropdown(false)}>
+          <View style={styles.dropdownOverlay}>
+            <View 
+              style={[
+                styles.dropdownContainer,
+                Platform.OS === 'web' && {
+                  position: 'absolute',
+                  top: shareButtonPosition.top,
+                  right: shareButtonPosition.right,
+                  zIndex: 1000
+                }
+              ]}
+            >
+              <HoverButton 
+                style={styles.dropdownItem}
+                onPress={() => handleShareAction('pushToMain')}
+              >
+                <Icon name="git-branch" size={18} color={colors.text} />
+                <Text style={[styles.dropdownText, {color: colors.text}]}>
+                  Push to Main
+                </Text>
+              </HoverButton>
+              
+              <HoverButton 
+                style={styles.dropdownItem}
+                onPress={() => handleShareAction('pushToNewBranch')}
+              >
+                <Icon name="git-merge" size={18} color={colors.text} />
+                <Text style={[styles.dropdownText, {color: colors.text}]}>
+                  Push to New Branch
+                </Text>
+              </HoverButton>
+              
+              <HoverButton 
+                style={styles.dropdownItem}
+                onPress={() => handleShareAction('addToRepository')}
+              >
+                <Icon name="file-plus" size={18} color={colors.text} />
+                <Text style={[styles.dropdownText, {color: colors.text}]}>
+                  Add File to Repository
+                </Text>
+              </HoverButton>
+              
+              <View style={styles.dropdownDivider} />
+              
+              <HoverButton 
+                style={styles.dropdownItem}
+                onPress={() => handleShareAction('revertChanges')}
+              >
+                <Icon name="refresh-ccw" size={18} color="#F44336" />
+                <Text style={[styles.dropdownText, {color: "#F44336"}]}>
+                  Revert All Changes
+                </Text>
+              </HoverButton>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    );
+  };
+
+  // History modal with fixed type for color
+  const renderHistoryModal = () => {
+    if (!showHistoryModal) return null;
+    
+    return (
+      <Modal
+        transparent={true}
+        visible={showHistoryModal}
+        animationType="fade"
+        onRequestClose={() => setShowHistoryModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowHistoryModal(false)}>
+          <View style={styles.historyOverlay}>
+            <View style={styles.historyContainer}>
+              <View style={styles.historyHeader}>
+                <Text style={[styles.historyTitle, {color: colors.text}]}>
+                  Edit History
+                </Text>
+                <HoverButton
+                  style={styles.historyCloseButton}
+                  onPress={() => setShowHistoryModal(false)}
+                >
+                  <Icon name="x" size={18} color={colors.text} />
+                </HoverButton>
+              </View>
+              
+              <FlatList
+                data={codeHistory}
+                keyExtractor={(_, index) => `history-${index}`}
+                renderItem={({ item, index }) => (
+                  <HoverButton
+                    style={[
+                      styles.historyItem,
+                      index === historyIndex && styles.historyItemActive
+                    ]}
+                    onPress={() => restoreFromHistory(index)}
+                  >
+                    <View style={styles.historyItemContent}>
+                      <Text style={[styles.historyItemTitle, {color: colors.text}]}>
+                        {index === 0 ? 'Initial Code' : `Edit ${index}`}
+                      </Text>
+                      <Text 
+                        style={[styles.historyItemPreview, {color: colors.secondary}]}
+                        numberOfLines={1}
+                      >
+                        {item.split('\n')[0].substring(0, 30)}...
+                      </Text>
+                    </View>
+                    {index === historyIndex && (
+                      <Icon name="check" size={16} color="#4CAF50" />
+                    )}
+                  </HoverButton>
+                )}
+                style={styles.historyList}
+              />
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    );
+  };
+
+  // Updated header with regular TouchableOpacity for share button
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerLeft}>
+        <HoverButton
+          style={styles.headerButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-left" size={20} color={colors.text} />
+        </HoverButton>
+        <Text style={[styles.fileName, { color: colors.text }]}>
+          {fileName}
+        </Text>
+      </View>
+      <View style={styles.headerButtons}>
+        <HoverButton 
+          style={styles.headerButton}
+          onPress={handleUndo}
+          disabled={historyIndex === 0}
+        >
+          <Icon 
+            name="rotate-ccw" 
+            size={20} 
+            color={historyIndex === 0 ? colors.border : colors.text} 
+          />
+        </HoverButton>
+        <HoverButton 
+          style={styles.headerButton}
+          onPress={handleRedo}
+          disabled={historyIndex === codeHistory.length - 1}
+        >
+          <Icon 
+            name="rotate-cw" 
+            size={20} 
+            color={historyIndex === codeHistory.length - 1 ? colors.border : colors.text} 
+          />
+        </HoverButton>
+        <HoverButton
+          style={styles.headerButton}
+          onPress={toggleHistoryModal}
+        >
+          <Icon name="clock" size={20} color={colors.text} />
+        </HoverButton>
+        {/* Use TouchableOpacity with ref for the share button */}
+        <TouchableOpacity 
+          style={[
+            styles.headerButton,
+            Platform.OS === 'web' && styles.webHeaderButton
+          ]}
+          onPress={toggleShareDropdown}
+          ref={shareButtonRef}
+        >
+          <Icon name="share-2" size={20} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  // Update key buttons to use HoverButton
   const renderKeyButtons = () => {
     const keys = ["{", "}", "(", ")", "[", "]", ";", "=", "+", "→"];
 
@@ -195,23 +488,29 @@ const CodeEditorScreen = () => {
       <View style={styles.keyButtonsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {keys.map((key, index) => (
-            <TouchableOpacity
+            <HoverButton
               key={index}
               style={styles.keyButton}
               onPress={() => insertAtCursor(key)}
             >
               <Text style={styles.keyButtonText}>{key}</Text>
-            </TouchableOpacity>
+            </HoverButton>
           ))}
-          {/* <TouchableOpacity
+          <HoverButton
             style={[styles.keyButton, styles.keyboardDismissButton]}
             onPress={dismissKeyboard}
           >
             <Icon name="chevron-down" size={20} color="#FFFFFF" />
-          </TouchableOpacity> */}
+          </HoverButton>
         </ScrollView>
       </View>
     );
+  };
+
+  const handleLineEdit = (lineIndex: number, newText: string) => {
+    const lines = code.split("\n");
+    lines[lineIndex] = newText;
+    setCode(lines.join("\n"));
   };
 
   // Function to render the code with highlighted lines
@@ -219,65 +518,63 @@ const CodeEditorScreen = () => {
     const lines = code.split("\n");
 
     return (
-      <View style={styles.codeInputContainer}>
-        <TextInput
-          ref={textInputRef}
-          style={[
-            styles.codeInput,
-            {
-              color: colors.codeForeground,
-              // backgroundColor: colors.codeBackground,
-            },
-          ]}
-          value={code}
-          onChangeText={setCode}
-          multiline
-          scrollEnabled={false}
-          autoCapitalize="none"
-          autoCorrect={false}
-          spellCheck={false}
-          returnKeyType="next"
-          textAlignVertical="top"
-          numberOfLines={lines.length}
-        />
-      </View>
+      <View style={styles.codeContentContainer}>
+      {lines.map((line, index) => {
+        // Determine if this line should be highlighted
+        const isHighlighted =
+          highlighted &&
+          index >= highlightStartLine &&
+          index <= highlightEndLine;
+
+        return (
+          <View key={index} style={styles.codeLine}>
+            {/* Line number component - directly alongside each code line */}
+            <View
+              style={[
+                styles.lineNumberContainer,
+                isHighlighted && styles.highlightedLineNumber,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.lineNumber,
+                  isHighlighted && { color: "#FFFFFF" },
+                ]}
+              >
+                {index + 1}
+              </Text>
+            </View>
+            
+            {/* Code content for this line - now using TextInput instead of Text */}
+            <TextInput
+              value={line}
+              onChangeText={(newText) => handleLineEdit(index, newText)}
+              style={[
+                styles.codeText,
+                { color: colors.codeForeground },
+                isHighlighted && styles.highlightedCodeText
+              ]}
+              multiline={false}
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              autoComplete="off"
+              ref={index === lines.length - 1 ? textInputRef : undefined}
+            />
+          </View>
+        );
+      })}
+    </View>
     );
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header with navigation and action buttons */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="arrow-left" size={20} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.fileName, { color: colors.text }]}>
-            {fileName}
-          </Text>
-        </View>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Icon name="rotate-ccw" size={16} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
-            <Icon name="rotate-cw" size={16} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
-            <Icon name="refresh-cw" size={16} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerButton}>
-            <Icon name="upload" size={16} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Show highlighted section banner if needed */}
+      {renderHeader()}
       {renderHighlightedSection()}
-
+      {renderShareDropdown()}
+      {renderHistoryModal()}
+      
       {/* Main code editor area */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -296,7 +593,6 @@ const CodeEditorScreen = () => {
               contentContainerStyle={styles.scrollContentContainer}
             >
               <View style={styles.codeContent}>
-                {renderLineNumbers()}
                 {renderCodeWithHighlight()}
               </View>
             </ScrollView>
@@ -334,6 +630,9 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: 8,
+  },
+  webHeaderButton: {
+    position: 'relative',
   },
   highlightedSectionContainer: {
     backgroundColor: "rgba(30, 144, 255, 0.1)",
@@ -375,11 +674,9 @@ const styles = StyleSheet.create({
   scrollContentContainer: {
     flexGrow: 1,
     flexDirection: "row",
-    // width: "auto",
   },
   codeContent: {
     flexDirection: "row",
-    padding: 12,
     minWidth: "100%",
     width: "auto",
     flexWrap: "nowrap",
@@ -448,6 +745,122 @@ const styles = StyleSheet.create({
   keyButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
+  },
+  codeText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: "monospace",
+    padding: 0,
+    minHeight: 20,
+    backgroundColor: 'transparent',
+  },
+  highlightedCodeText: {
+    backgroundColor: "rgba(30, 144, 255, 0.2)",
+  },
+  codeContentContainer: {
+    padding: 12,
+    minWidth: "100%",
+  },
+  codeLine: {
+    flexDirection: 'row',
+    minHeight: 20,
+  },
+  dropdownOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  dropdownContainer: {
+    backgroundColor: '#252525',
+    borderRadius: 8,
+    marginTop: 50,
+    marginRight: 10,
+    width: 220,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  dropdownText: {
+    fontSize: 14,
+    marginLeft: 12,
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: '#444',
+    marginHorizontal: 8,
+  },
+  buttonHovered: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 4,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  historyOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  historyContainer: {
+    backgroundColor: '#252525',
+    borderRadius: 8,
+    width: '80%',
+    maxWidth: 500,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+    padding: 16,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  historyCloseButton: {
+    padding: 8,
+  },
+  historyList: {
+    maxHeight: 500,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  historyItemActive: {
+    backgroundColor: 'rgba(30, 144, 255, 0.1)',
+  },
+  historyItemContent: {
+    flex: 1,
+  },
+  historyItemTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  historyItemPreview: {
+    fontSize: 12,
+    opacity: 0.7,
   },
 });
 export default CodeEditorScreen;

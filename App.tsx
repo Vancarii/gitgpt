@@ -32,7 +32,7 @@ import CommitConfirmScreen from "./src/screens/CommitConfirmScreen";
 
 // Define the type for our route parameters
 export type RootStackParamList = {
-  Home: undefined;
+  Home: { resetMessages?: boolean } | undefined;
   RepositoryList: undefined;
   RepositoryDetail: { id: string; name: string };
   CodeEditor: { fileName: string };
@@ -87,7 +87,8 @@ const MainStackNavigator = () => {
           <TouchableOpacity
             onPress={() => {
               if (isLoggedIn) {
-                console.log("New chat");
+                navigation.navigate("Home", { resetMessages: true });
+                // console.log("New chat");
               } else {
                 navigation.navigate("Login");
               }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { DrawerNavigationProp } from "@react-navigation/drawer";
@@ -33,6 +33,7 @@ type HomeScreenNavigationProp = CompositeNavigationProp<
 
 const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const route = useRoute();
   const { colors } = useTheme();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +56,7 @@ const HomeScreen = () => {
     handleCopyCode,
     handleGitHubLogin,
     handleUnavailableFeature,
+    resetMessages,
   } = useChatHandlers(
     navigation,
     setMessages,
@@ -65,6 +67,19 @@ const HomeScreen = () => {
     showPopup,
     messages
   );
+
+  useEffect(() => {
+    if (
+      route.params &&
+      "resetMessages" in route.params &&
+      route.params.resetMessages
+    ) {
+      resetMessages();
+
+      // Clear the parameter after handling it to prevent repeated resets
+      navigation.setParams({ resetMessages: undefined });
+    }
+  }, [route.params]);
 
   const renderMessages = () => {
     if (messages.length === 0) {

@@ -5,3 +5,8 @@ server/node_modules
 .expo
 web-build
 dist
+package.json
+package-lock.json
+server/server.js
+package-lock.json
+package.json

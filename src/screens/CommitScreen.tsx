@@ -122,7 +122,7 @@ const CommitScreen = () => {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            {/* Header with back button and title */}
+            {/* Header with back button and GitHub icon */}
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.backButton}
@@ -130,15 +130,20 @@ const CommitScreen = () => {
                 >
                     <Icon name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
+                
+                <View style={styles.headerIconContainer}>
+                    <Icon name="github" size={24} color={colors.text} />
+                </View>
+                
                 <View style={styles.placeholder} />
             </View>
 
-            {/* GitHub icon and title in center */}
-            <View style={styles.githubIconContainer}>
-                <Icon name="github" size={40} color={colors.text} />
+            {/* Title section with separator */}
+            <View style={styles.titleContainer}>
                 <Text style={[styles.headerTitle, { color: colors.text }]}>
                     Review Change
                 </Text>
+                <View/>
             </View>
 
             <ScrollView style={styles.contentContainer}>
@@ -162,7 +167,7 @@ const CommitScreen = () => {
                     ]}>
                         {changedCode.split('\n').map((line, index) => (
                             <View key={index} style={styles.codeLine}>
-                                <Text style={[styles.lineNumber, { color: colors.secondary }]}>
+                                <Text style={[styles.lineNumber, { color: "white" }]}>
                                     {index + 1}
                                 </Text>
                                 <Text style={[styles.codeText, { color: colors.text }]}>
@@ -236,9 +241,18 @@ const styles = StyleSheet.create({
     placeholder: {
         width: 40, // Same width as back button to center the title
     },
-    githubIconContainer: {
+    headerIconContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    titleContainer: {
         alignItems: "center",
         marginVertical: 20,
+    },
+    titleSeparator: {
+        height: 1,
+        width: "80%",
+        marginTop: 8,
     },
     contentContainer: {
         flex: 1,
@@ -319,14 +333,25 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
     },
     modalContent: {
-        width: '70%',
-        maxWidth: 350,
-        backgroundColor: '#F9F9F9',
+        width: Platform.OS === 'web' ? '70%' : '85%', // Wider on mobile
+        maxWidth: 320, // Limit max width for mobile
+        backgroundColor: Platform.OS === 'ios' ? '#F9F9F9' : '#242424', // Different bg for iOS vs Android
         borderRadius: 13,
         overflow: 'hidden',
+        // Add shadow for better visibility
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+            },
+            android: {
+                elevation: 5,
+            },
+        }),
     },
     modalTitle: {
         textAlign: 'center',
@@ -334,12 +359,12 @@ const styles = StyleSheet.create({
         fontSize: 17,
         padding: 16,
         paddingBottom: 10,
-        color: '#000',
+        color: Platform.OS === 'ios' ? '#000' : '#FFF',
     },
     modalMessage: {
         textAlign: 'center',
         fontSize: 13,
-        color: '#666',
+        color: Platform.OS === 'ios' ? '#666' : '#CCC',
         paddingHorizontal: 16,
         paddingBottom: 16,
     },
@@ -406,6 +431,7 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
 
+      
 });
 
 export default CommitScreen;

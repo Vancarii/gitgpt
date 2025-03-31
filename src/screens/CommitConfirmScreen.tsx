@@ -32,7 +32,7 @@ const CommitConfirmScreen = () => {
           <Icon name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Icon name="github" size={30} color={colors.text} />
+          <Icon name="github" size={24} color={colors.text} />
         </View>
         <View style={styles.placeholder} />
       </View>

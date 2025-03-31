@@ -4,11 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { 
   View, ScrollView, Text, TouchableOpacity, TextInput, KeyboardAvoidingView, 
   Platform, Keyboard, TouchableWithoutFeedback, Modal, StyleSheet,
-  StyleProp, ViewStyle, FlatList
+  StyleProp, ViewStyle, FlatList, Dimensions
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../../App";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
   useNavigation,
@@ -131,6 +132,10 @@ const CodeEditorScreen = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const shareButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
   const [shareButtonPosition, setShareButtonPosition] = useState({ top: 0, right: 0 });
+  const [isModified, setIsModified] = useState(false);
+  const [activeLineIndex, setActiveLineIndex] = useState(-1);
+  const cursorPositionRef = useRef<number>(0);
+
 
   // Define which lines to highlight (line numbers are 0-indexed in the array)
   const highlightStartLine = 17; // Line 22 (0-indexed)
@@ -145,25 +150,55 @@ const CodeEditorScreen = () => {
 
   // Insert special character at current cursor position
   const insertAtCursor = (char: string) => {
-    if (textInputRef.current && textInputRef.current.isFocused()) {
-      const currentCode = code;
-      // Since we can't get cursor position easily in React Native,
-      // we'll just append to the end for this demo
-      setCode(currentCode + char);
+    if (activeLineIndex >= 0) {
+      const lines = code.split("\n");
+      const line = lines[activeLineIndex];
+      
+      // Insert the character at cursor position for the active line
+      const newLine = line.substring(0, cursorPositionRef.current) + 
+                      char + 
+                      line.substring(cursorPositionRef.current);
+      
+      lines[activeLineIndex] = newLine;
+      setCode(lines.join("\n"));
+      setIsModified(true);
+      
+      // Update cursor position
+      cursorPositionRef.current += char.length;
+      
+      // Re-focus the TextInput and set cursor position after render
+      setTimeout(() => {
+        if (textInputRef.current) {
+          textInputRef.current.focus();
+          
+          // Try to handle cursor positioning - this is challenging in React Native
+          // On web, we can try selection APIs
+          if (Platform.OS === 'web') {
+            try {
+              // @ts-ignore - This is web-specific code
+              textInputRef.current.setSelectionRange(
+                cursorPositionRef.current,
+                cursorPositionRef.current
+              );
+            } catch (error) {
+              console.log('Error setting cursor position:', error);
+            }
+          }
+        }
+      }, 10);
     }
   };
 
-  const highlightedCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (showShareDropdown && shareButtonRef.current && Platform.OS === 'web') {
       // @ts-ignore - This is web-specific code
       const rect = shareButtonRef.current.getBoundingClientRect();
-      setShareButtonPosition({
-        top: rect.bottom + window.scrollY, // Add scroll position
-        right: window.innerWidth - rect.right
-      });
-    }
+        setShareButtonPosition({
+          top: rect.bottom + window.scrollY - 40, // Add scroll position
+          right: window.innerWidth - rect.right - 20
+        });
+      }
   }, [showShareDropdown]);
 
   // Function to handle accepting changes
@@ -174,6 +209,9 @@ const CodeEditorScreen = () => {
     
     // Keep the code but remove highlighting
     setHighlighted(false);
+    
+    // Important: Keep isModified as true when accepting changes
+    setIsModified(true);
   };
 
   // Function to handle declining changes
@@ -189,6 +227,9 @@ const CodeEditorScreen = () => {
     // Set the new code and remove highlight
     setCode(newLines.join('\n'));
     setHighlighted(false);
+    
+    // Only in decline case, we reset the modified state
+    setIsModified(false);
   };
 
   // Undo the last action
@@ -271,15 +312,17 @@ const CodeEditorScreen = () => {
           </Text>
           <View style={styles.highlightedSectionButtons}>
             <TouchableOpacity
-              style={[styles.highlightButton, { backgroundColor: "#4CAF50" }]}
+              style={[styles.highlightButton, styles.acceptButton]}
               onPress={handleAcceptChanges}
             >
+              <Icon name="check" size={16} color="#FFFFFF" style={styles.buttonIcon} />
               <Text style={styles.highlightButtonText}>Accept</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.highlightButton, { backgroundColor: "#F44336" }]}
+              style={[styles.highlightButton, styles.declineButton]}
               onPress={handleDeclineChanges}
             >
+              <Icon name="x" size={16} color="#FFFFFF" style={styles.buttonIcon} />
               <Text style={styles.highlightButtonText}>Decline</Text>
             </TouchableOpacity>
           </View>
@@ -304,10 +347,10 @@ const CodeEditorScreen = () => {
             <View 
               style={[
                 styles.dropdownContainer,
-                Platform.OS === 'web' && {
+                {
                   position: 'absolute',
-                  top: shareButtonPosition.top,
-                  right: shareButtonPosition.right,
+                  top: shareButtonPosition.top ,
+                  right: shareButtonPosition.right ,
                   zIndex: 1000
                 }
               ]}
@@ -422,7 +465,7 @@ const CodeEditorScreen = () => {
     );
   };
 
-  // Updated header with regular TouchableOpacity for share button
+  // Updated header with file modification indicator
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
@@ -432,9 +475,16 @@ const CodeEditorScreen = () => {
         >
           <Icon name="arrow-left" size={20} color={colors.text} />
         </HoverButton>
-        <Text style={[styles.fileName, { color: colors.text }]}>
-          {fileName}
-        </Text>
+        <View style={styles.fileNameContainer}>
+          <Text style={[styles.fileName, { color: colors.text }]}>
+            {fileName}
+          </Text>
+          {isModified && (
+            <View style={styles.modifiedIconContainer}>
+              <Text style={styles.modifiedIcon}>M</Text>
+            </View>
+          )}
+        </View>
       </View>
       <View style={styles.headerButtons}>
         <HoverButton 
@@ -509,8 +559,82 @@ const CodeEditorScreen = () => {
 
   const handleLineEdit = (lineIndex: number, newText: string) => {
     const lines = code.split("\n");
+    
+    // Only mark as modified if content actually changed
+    if (lines[lineIndex] !== newText) {
+      setIsModified(true);
+    }
+    
     lines[lineIndex] = newText;
     setCode(lines.join("\n"));
+  };
+
+  // Function to handle tab/shift for indentation (right shifting)
+  const handleKeyPress = (e: React.KeyboardEvent, lineIndex: number) => {
+    return false;
+  };
+
+  // Function to track cursor position
+  const handleSelectionChange = (e: any, lineIndex: number) => {
+    if (e.nativeEvent.selection) {
+      cursorPositionRef.current = e.nativeEvent.selection.start;
+      setActiveLineIndex(lineIndex);
+    }
+  };
+
+  // Function to get color for syntax highlighting
+  const getColorForToken = (token: string) => {
+    // C++ keywords
+    const keywords = [
+      'class', 'public', 'private', 'protected', 'int', 'bool', 'void', 
+      'vector', 'string', 'queue', 'using', 'namespace', 'auto', 'for', 'while', 
+      'if', 'else', 'return', 'true', 'false', 'std', 'cout', 'include'
+    ];
+    
+    // Types
+    const types = ['int', 'bool', 'void', 'string', 'vector', 'queue'];
+    
+    // Check token type
+    if (token.startsWith('//')) {
+      return '#6A9955'; // Comments - green
+    } else if (token.startsWith('"') && token.endsWith('"')) {
+      return '#CE9178'; // Strings - brownish
+    } else if (keywords.includes(token)) {
+      return '#569CD6'; // Keywords - blue
+    } else if (types.includes(token)) {
+      return '#4EC9B0'; // Types - teal
+    } else if (token.match(/\d+/)) {
+      return '#B5CEA8'; // Numbers - light green
+    } else if (token.match(/[A-Z][a-zA-Z0-9_]*/)) {
+      return '#C586C0'; // Classes/uppercase identifiers - purple
+    }
+    
+    // Default text color
+    return colors.codeForeground;
+  };
+
+  // Simple syntax highlighter function
+  const renderHighlightedText = (text: string) => {
+    // Split text by common delimiters while keeping them in the result
+    const tokens = text.split(/([{}()[\];:=+\-*/<>!&|^%,.\s]+)/);
+    
+    return (
+      <Text style={{ flexDirection: 'row', fontFamily: "monospace", fontSize: 14 }}>
+        {tokens.map((token: string, idx: number) => {
+          // Skip empty tokens
+          if (!token.trim()) {
+            return <Text key={idx} style={{ color: colors.codeForeground, fontFamily: "monospace", fontSize: 14 }}>{token}</Text>;
+          }
+          
+          const color = getColorForToken(token);
+          return (
+            <Text key={idx} style={{ color, fontFamily: "monospace", fontSize: 14 }}>
+              {token}
+            </Text>
+          );
+        })}
+      </Text>
+    );
   };
 
   // Function to render the code with highlighted lines
@@ -519,52 +643,96 @@ const CodeEditorScreen = () => {
 
     return (
       <View style={styles.codeContentContainer}>
-      {lines.map((line, index) => {
-        // Determine if this line should be highlighted
-        const isHighlighted =
-          highlighted &&
-          index >= highlightStartLine &&
-          index <= highlightEndLine;
+        {lines.map((line, index) => {
+          // Determine if this line should be highlighted
+          const isHighlighted =
+            highlighted &&
+            index >= highlightStartLine &&
+            index <= highlightEndLine;
 
-        return (
-          <View key={index} style={styles.codeLine}>
-            {/* Line number component - directly alongside each code line */}
-            <View
-              style={[
-                styles.lineNumberContainer,
-                isHighlighted && styles.highlightedLineNumber,
-              ]}
-            >
-              <Text
+          return (
+            <View key={index} style={styles.codeLine}>
+              {/* Line number component */}
+              <View
                 style={[
-                  styles.lineNumber,
-                  isHighlighted && { color: "#FFFFFF" },
+                  styles.lineNumberContainer,
+                  isHighlighted && styles.highlightedLineNumber,
                 ]}
               >
-                {index + 1}
-              </Text>
+                <Text
+                  style={[
+                    styles.lineNumber,
+                    isHighlighted && { color: "#FFFFFF" },
+                  ]}
+                >
+                  {index + 1}
+                </Text>
+              </View>
+              
+              {/* Code content for this line */}
+              <View 
+                style={[
+                  styles.codeTextContainer,
+                  { backgroundColor: isHighlighted ? "rgba(30, 144, 255, 0.2)" : 'transparent' }
+                ]}
+              >
+                {activeLineIndex === index ? (
+                  <TextInput
+                  value={line}
+                  onChangeText={(newText) => handleLineEdit(index, newText)}
+                  style={[
+                    styles.codeText,
+                    { 
+                      color: colors.codeForeground,
+                      fontFamily: "monospace",
+                      fontSize: 14
+                    }
+                  ]}
+                    multiline={false}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                    autoComplete="off"
+                    ref={textInputRef}
+                    onSelectionChange={(e) => handleSelectionChange(e, index)}
+                    //onKeyPress={(e) => handleKeyPress(e, index)}
+                    onFocus={() => setActiveLineIndex(index)}
+
+                  />
+                ) : (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      // Activate edit mode immediately
+                      setActiveLineIndex(index);
+                      
+                      // Focus the input after a slight delay to ensure it's in the DOM
+                      setTimeout(() => {
+                        if (textInputRef.current) {
+                          textInputRef.current.focus();
+                          
+                          // Set cursor to the end of the line initially
+                          // cursorPositionRef.current = line.length;
+                          
+                            try {
+                              // @ts-ignore - This is web-specific code
+                              textInputRef.current.setSelectionRange(0, line.length);
+                            } catch (error) {
+                              console.log('Error setting selection range:', error);
+                            }
+                          
+                        }
+                      }, 1);
+                    }}
+                    style={{ flex: 1 }}
+                  >
+                    {renderHighlightedText(line)}
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-            
-            {/* Code content for this line - now using TextInput instead of Text */}
-            <TextInput
-              value={line}
-              onChangeText={(newText) => handleLineEdit(index, newText)}
-              style={[
-                styles.codeText,
-                { color: colors.codeForeground },
-                isHighlighted && styles.highlightedCodeText
-              ]}
-              multiline={false}
-              autoCapitalize="none"
-              autoCorrect={false}
-              spellCheck={false}
-              autoComplete="off"
-              ref={index === lines.length - 1 ? textInputRef : undefined}
-            />
-          </View>
-        );
-      })}
-    </View>
+          );
+        })}
+      </View>
     );
   };
 
@@ -575,27 +743,30 @@ const CodeEditorScreen = () => {
       {renderShareDropdown()}
       {renderHistoryModal()}
       
-      {/* Main code editor area */}
+      {/* Main code editor area - FIXED STRUCTURE for proper horizontal dragging */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 5 : 0}
       >
         <View style={styles.codeEditorContainer}>
+          {/* The outer ScrollView is horizontal and contains ALL the code content */}
           <ScrollView
             ref={scrollViewRef}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{ minWidth: '100%' }}
           >
-            <ScrollView
-              showsVerticalScrollIndicator={true}
-              contentContainerStyle={styles.scrollContentContainer}
-            >
-              <View style={styles.codeContent}>
+            {/* This container ensures the code block stays together */}
+            <View style={{ flexDirection: 'row' }}>
+              {/* The inner ScrollView handles vertical scrolling */}
+              <ScrollView
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
                 {renderCodeWithHighlight()}
-              </View>
-            </ScrollView>
+              </ScrollView>
+            </View>
           </ScrollView>
         </View>
         {renderKeyButtons()}
@@ -621,9 +792,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  fileNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   fileName: {
     fontSize: 14,
     fontWeight: "500",
+  },
+  modifiedIconContainer: {
+    marginLeft: 8,
+    backgroundColor: '#FF8C00', // Dark orange color
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modifiedIcon: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   headerButtons: {
     flexDirection: "row",
@@ -654,18 +843,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   highlightButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    marginLeft: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 10,
+    minWidth: 100,
+  },
+  acceptButton: {
+    backgroundColor: "#4CAF50",
+  },
+  declineButton: {
+    backgroundColor: "#F44336",
   },
   highlightButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#FFFFFF",
-    fontWeight: "500",
+    fontWeight: "600",
+    marginLeft: 6,
+  },
+  buttonIcon: {
+    marginRight: 4,
   },
   codeEditorContainer: {
     flex: 1,
+    width: '100%', // Full width container
   },
   codeScrollContainer: {
     flex: 1,
@@ -753,18 +957,23 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     padding: 0,
     minHeight: 20,
-    backgroundColor: 'transparent',
   },
-  highlightedCodeText: {
-    backgroundColor: "rgba(30, 144, 255, 0.2)",
+  codeTextContainer: {
+    flex: 1,
+    paddingVertical: 0,
+    paddingHorizontal: 2,
+    minHeight: 20,
+    backgroundColor: 'transparent',
   },
   codeContentContainer: {
     padding: 12,
-    minWidth: "100%",
+    minWidth: '100%', // This ensures the code takes full width
+    width: 2000, // This large fixed width ensures there's space for horizontal scrolling
   },
   codeLine: {
     flexDirection: 'row',
     minHeight: 20,
+    width: '100%', // Each line takes the full width of the container
   },
   dropdownOverlay: {
     flex: 1,
@@ -862,5 +1071,104 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.7,
   },
+  onboardingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  highlightArea: {
+    position: 'absolute',
+    backgroundColor: 'rgba(30, 144, 255, 0.3)',
+    borderRadius: 8,
+  },
+  onboardingCard: {
+    backgroundColor: '#252525',
+    borderRadius: 8,
+    padding: 16,
+    width: '80%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  onboardingTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#FFFFFF',
+  },
+  onboardingMessage: {
+    fontSize: 14,
+    marginBottom: 16,
+    color: '#CCCCCC',
+  },
+  onboardingNavigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  onboardingButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    backgroundColor: '#1E90FF',
+  },
+  onboardingButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  experienceCard: {
+    backgroundColor: '#252525',
+    borderRadius: 8,
+    padding: 16,
+    width: '80%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  experienceTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#FFFFFF',
+  },
+  experienceMessage: {
+    fontSize: 14,
+    marginBottom: 16,
+    color: '#CCCCCC',
+  },
+  experienceButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  experienceButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+    backgroundColor: '#1E90FF',
+    marginHorizontal: 8,
+    alignItems: 'center',
+  },
+  experienceButtonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  experienceButtonSubtext: {
+    fontSize: 12,
+    color: '#CCCCCC',
+    marginTop: 4,
+  },
+  expertButton: {
+    backgroundColor: '#4CAF50',
+  },
+  
 });
 export default CodeEditorScreen;

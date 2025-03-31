@@ -276,6 +276,10 @@ export const useChatHandlers = (
     showPopup({});
   };
 
+  const resetMessages = () => {
+    setMessages([]);
+  };
+
   return {
     handleSend,
     handleRepositorySelect,
@@ -286,5 +290,6 @@ export const useChatHandlers = (
     handleUnavailableFeature,
     extractCodeBlocks,
     callOpenAI,
+    resetMessages,
   };
 };

@@ -24,7 +24,7 @@ import { sampleRepositories } from "../data/Repositories";
 import { useChatHandlers } from "../handlers/ChatHandlers";
 import { WelcomeScreen } from "../components/WelcomeScreen";
 import { MessageComponent } from "../components/MessageComponent";
-import NavigateToCodeEditorButton from "../components/TempButton";
+// import NavigateToCodeEditorButton from "../components/TempButton";
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList, "Home">,
@@ -135,7 +135,7 @@ const HomeScreen = () => {
           {renderMessages()}
         </ScrollView>
 
-        <NavigateToCodeEditorButton />
+        {/* /<NavigateToCodeEditorButton /> */}
 
         <View style={styles.inputContainer}>
           <InputBar onSend={handleSend} disabled={isLoading} />

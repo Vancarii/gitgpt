@@ -46,7 +46,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     secondary: theme === "dark" ? "#2D2D2D" : "#E0E0E0",
     card: theme === "dark" ? "#2D2D2D" : "#F5F5F5",
     border: theme === "dark" ? "#3E3E3E" : "#E0E0E0",
-    codeBackground: theme === "dark" ? "#1E3A5F" : "#F0F8FF",
+    codeBackground: theme === "dark" ? "#223643" : "#F0F8FF",
     codeForeground: theme === "dark" ? "#A9B7C6" : "#333333",
     buttonBackground: theme === "dark" ? "#2D2D2D" : "#F0F0F0",
     buttonText: theme === "dark" ? "#FFFFFF" : "#000000",

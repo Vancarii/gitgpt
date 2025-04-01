@@ -28,5 +28,10 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
+// In your server.js file, make sure the server listens on all interfaces
+// app.listen(8081, '0.0.0.0', () => {
+//   console.log('Server running on port 8081');
+// });
+
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

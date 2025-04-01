@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { type NavigationProp } from "@react-navigation/native";
 import { type Message, type Repository } from "../types/ChatTypes";
+import { Platform } from "react-native";
 
 export const useChatHandlers = (
   navigation: NavigationProp<any>,
@@ -78,25 +79,28 @@ export const useChatHandlers = (
             content: msg.content,
           }));
 
+        // API URL that works for all platforms
+        const apiUrl =
+          process.env.NODE_ENV === "production"
+            ? "/api/chat" // Production (deployed web app)
+            : Platform.OS === "web"
+            ? "http://localhost:8081/api/chat" // Local web development
+            : "http://192.168.0.31:8081/api/chat"; // Expo Go mobile app
+
         // Make sure to use the correct API endpoint
-        const response = await fetch(
-          process.env.NODE_ENV === "development"
-            ? "http://localhost:8081/api/chat" // Make sure this matches your server port
-            : "/api/chat",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              messages: [
-                ...messagesForAPI,
-                { role: "user", content: userMessage },
-              ],
-            }),
-            signal: controller.signal,
-          }
-        );
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messagesForAPI,
+              { role: "user", content: userMessage },
+            ],
+          }),
+          signal: controller.signal,
+        });
 
         clearTimeout(timeoutId);
 

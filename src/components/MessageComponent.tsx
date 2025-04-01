@@ -96,15 +96,15 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
-    maxWidth: "85%",
+    maxWidth: "95%",
   },
   userMessage: {
     alignSelf: "flex-end",
     backgroundColor: "#444654",
   },
   assistantMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: "#343541",
+    // alignSelf: "flex-start",
+    // backgroundColor: "#343541",
   },
   errorMessage: {
     alignSelf: "flex-start",

@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   codeBlockContainer: {
-    marginVertical: 12,
+    // marginVertical: 12,
     borderRadius: 8,
     overflow: "hidden",
     borderWidth: 1,

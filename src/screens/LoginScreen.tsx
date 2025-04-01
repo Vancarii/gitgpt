@@ -25,8 +25,32 @@ const LoginScreen = () => {
   const [usernameInput, setUsernameInput] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const validateInputs = () => {
+    if (!usernameInput.trim()) {
+      setErrorMessage("Username cannot be empty");
+      return false;
+    }
+
+    if (!password.trim()) {
+      setErrorMessage("Password cannot be empty");
+      return false;
+    }
+
+    setErrorMessage("");
+    return true;
+  };
 
   const handleLogin = () => {
+    // Clear previous error
+    setErrorMessage("");
+
+    // Validate inputs
+    if (!validateInputs()) {
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate API call delay
@@ -47,6 +71,12 @@ const LoginScreen = () => {
       </View>
 
       <View style={styles.formContainer}>
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
+
         <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Username
@@ -60,7 +90,10 @@ const LoginScreen = () => {
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={usernameInput}
-              onChangeText={setUsernameInput}
+              onChangeText={(text) => {
+                setUsernameInput(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               autoCapitalize="none"
               autoCorrect={false}
               placeholder="e.g., john_doe"
@@ -82,7 +115,10 @@ const LoginScreen = () => {
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               secureTextEntry
               placeholder="Enter your password"
               placeholderTextColor={colors.text + "80"} // Add transparency
@@ -176,6 +212,18 @@ const styles = StyleSheet.create({
   link: {
     fontWeight: "500",
     fontFamily: "OPTIDanley-Medium",
+  },
+  errorContainer: {
+    backgroundColor: "rgba(255, 0, 0, 0.1)",
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#FF3B30",
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontWeight: "500",
   },
 });
 

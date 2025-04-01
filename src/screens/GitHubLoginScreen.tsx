@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -25,8 +26,32 @@ const GitHubLoginScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const validateInputs = () => {
+    if (!username.trim()) {
+      setErrorMessage("Username or email cannot be empty");
+      return false;
+    }
+
+    if (!password.trim()) {
+      setErrorMessage("Password cannot be empty");
+      return false;
+    }
+
+    setErrorMessage("");
+    return true;
+  };
 
   const handleLogin = () => {
+    // Clear previous error
+    setErrorMessage("");
+
+    // Validate inputs
+    if (!validateInputs()) {
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate API call delay
@@ -40,12 +65,30 @@ const GitHubLoginScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
+        {/* GitHub Logo */}
+        {/* <View style={styles.logoContainer}>
+          <Text style={[styles.githubIcon, { color: colors.text }]}>
+            <Image
+              source={require("../../assets/github-mark.png")}
+              style={styles.githubIcon}
+            />
+          </Text>
+        </View> */}
         <Text style={[styles.headerText, { color: colors.text }]}>
-          Sign in to GitHub
+          Connect your GitHub account
         </Text>
+        {/* <Text style={[styles.headerSubtext, { color: colors }]}>
+          Access your repositories and collaborate seamlessly
+        </Text> */}
       </View>
 
       <View style={styles.formContainer}>
+        {errorMessage ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          </View>
+        ) : null}
+
         <View style={styles.inputWrapper}>
           <Text style={[styles.inputLabel, { color: colors.text }]}>
             Username or email address
@@ -59,7 +102,10 @@ const GitHubLoginScreen = () => {
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={username}
-              onChangeText={setUsername}
+              onChangeText={(text) => {
+                setUsername(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               autoCapitalize="none"
               autoCorrect={false}
               placeholder="e.g., Vancarii"
@@ -81,7 +127,10 @@ const GitHubLoginScreen = () => {
             <TextInput
               style={[styles.input, { color: colors.text }]}
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (errorMessage) setErrorMessage("");
+              }}
               secureTextEntry
               placeholder="******"
               placeholderTextColor={colors.text + "80"}
@@ -93,15 +142,15 @@ const GitHubLoginScreen = () => {
           style={[
             styles.signInButton,
             {
-              backgroundColor: colors.accent,
+              backgroundColor: "#6e40c9", // GitHub purple color
               opacity: isLoading ? 0.7 : 1,
             },
           ]}
           onPress={handleLogin}
           disabled={isLoading}
         >
-          <Text style={[styles.signInButtonText, { color: colors.buttonText }]}>
-            {isLoading ? "Signing in..." : "Sign in"}
+          <Text style={styles.signInButtonText}>
+            {isLoading ? "Connecting..." : "Connect to GitHub"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -120,10 +169,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 40,
   },
+  logoContainer: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  githubIcon: {
+    width: 60,
+    height: 60,
+    marginBottom: 10,
+  },
   headerText: {
     fontSize: 24,
-    fontWeight: "500",
-    marginTop: 16,
+    fontWeight: "600",
+    marginTop: 5,
+    fontFamily: "OPTIDanley-Medium",
+    textAlign: "center",
+  },
+  headerSubtext: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: "center",
     fontFamily: "OPTIDanley-Medium",
   },
   formContainer: {
@@ -149,7 +214,7 @@ const styles = StyleSheet.create({
     fontFamily: "OPTIDanley-Medium",
   },
   signInButton: {
-    padding: 12,
+    padding: 14,
     borderRadius: 6,
     alignItems: "center",
     marginTop: 16,
@@ -158,6 +223,19 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 16,
     fontFamily: "OPTIDanley-Medium",
+    color: "#ffffff",
+  },
+  errorContainer: {
+    backgroundColor: "rgba(255, 0, 0, 0.1)",
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#FF3B30",
+  },
+  errorText: {
+    color: "#FF3B30",
+    fontWeight: "500",
   },
 });
 

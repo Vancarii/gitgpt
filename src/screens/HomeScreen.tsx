@@ -134,9 +134,7 @@ const HomeScreen = () => {
         >
           {renderMessages()}
         </ScrollView>
-
         {/* /<NavigateToCodeEditorButton /> */}
-
         <View style={styles.inputContainer}>
           <InputBar onSend={handleSend} disabled={isLoading} />
           <Text style={styles.disclaimer}>GitGPT can make mistakes.</Text>

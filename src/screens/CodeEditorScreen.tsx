@@ -21,14 +21,16 @@ import {
 import Icon from "react-native-vector-icons/Feather";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../../App";
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
   useNavigation,
   useRoute,
+  useIsFocused,
   type RouteProp,
 } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import PopupModal from "../components/PopupModal";
 
 // First, let's add a custom hook for hover effects on web
 const useHover = () => {
@@ -137,6 +139,17 @@ public:
     }
 };`;
 
+const guideTitle = "Welcome to Code Editor";
+const guideDescription =
+  "Here's how to use the Code Editor:\n\n" +
+  "• Blue highlighted areas show suggested code changes\n" +
+  "• Use Accept/Decline buttons to manage suggestions\n" +
+  "• Tap on any line to edit it directly\n" +
+  "• Use undo/redo buttons to track changes\n" +
+  "• Click the clock icon to view code history\n" +
+  "• Use the share button to commit or save changes\n\n" +
+  "Happy coding!";
+
 const CodeEditorScreen = () => {
   const route = useRoute<CodeEditorScreenRouteProp>();
   const navigation = useNavigation<CodeEditorScreenNavigationProp>();
@@ -158,6 +171,35 @@ const CodeEditorScreen = () => {
   const [isModified, setIsModified] = useState(false);
   const [activeLineIndex, setActiveLineIndex] = useState(-1);
   const cursorPositionRef = useRef<number>(0);
+
+  const [showGuide, setShowGuide] = useState(false);
+  const isFocused = useIsFocused();
+  const guideDismissedRef = useRef(false);
+
+  useEffect(() => {
+    const checkGuideStatus = async () => {
+      try {
+        // Check if the guide has been shown before
+        const hasSeenGuide = await AsyncStorage.getItem(
+          "hasSeenCodeEditorGuide"
+        );
+        if (hasSeenGuide !== "true" && isFocused) {
+          setShowGuide(true);
+          // Save that the guide has been shown
+          await AsyncStorage.setItem("hasSeenCodeEditorGuide", "true");
+        }
+      } catch (error) {
+        console.log("Error checking guide status:", error);
+        // If there's an error accessing AsyncStorage, fall back to using the ref
+        if (isFocused && !guideDismissedRef.current) {
+          setShowGuide(true);
+          guideDismissedRef.current = true;
+        }
+      }
+    };
+
+    checkGuideStatus();
+  }, [isFocused]);
 
   // Define which lines to highlight (line numbers are 0-indexed in the array)
   const highlightStartLine = 17; // Line 22 (0-indexed)
@@ -862,6 +904,20 @@ const CodeEditorScreen = () => {
         </View>
         {renderKeyButtons()}
       </KeyboardAvoidingView>
+
+      <PopupModal
+        visible={showGuide}
+        onClose={() => {
+          setShowGuide(false);
+          // Additional safety - try to update AsyncStorage again
+          AsyncStorage.setItem("hasSeenCodeEditorGuide", "true").catch(
+            (err: unknown) => console.log("Error saving guide status:", err)
+          );
+        }}
+        title={guideTitle}
+        description={guideDescription}
+        buttonText="Got it!"
+      />
     </View>
   );
 };

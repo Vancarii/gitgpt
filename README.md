@@ -116,86 +116,77 @@ Then click ```Sign in```
 
 ### Step 2: Connect GitHub Account
 
-1. Connecting to GitHub now can be done in more than 1 way:
-   - Click the ```GitHub Login``` button in the main chat interface
-   - Go to the ```sidebar``` and click ```Linked Accounts```
+1. Connecting to GitHub now can be done in 2 way:
+   - (Shorter method) Click the ```GitHub Login``` button in the main chat interface
 
 <p align="center">
   <img width="150" src="https://github.com/user-attachments/assets/fa8e5b28-f1f4-46da-b53a-8c0acb186947" />
 </p>
 
-OR
+   - OR: Go to the ```menu``` sidebar and click ```Linked Accounts```, then click on ```Connect``` in the GitHub tab
 
 <p align="center">
   <img width="150" alt="sidebar" src="https://github.com/user-attachments/assets/91dfe3cc-9aa5-4448-867e-e8f6ce57fbc7" />
   <img width="150" alt="sidebar-linked-acc" src="https://github.com/user-attachments/assets/d2b5ae73-3069-40b5-b901-ab930356847c" />
+    <img width="150" alt="integrations" src="https://github.com/user-attachments/assets/9a23c3ee-8b7c-4373-9efd-6369d1b18786" />
 </p>
 
-
-
-
-
-2. Click **Integrations** 
+2. Enter a simple text into the input boxes (ex. username: user, password: 1234) and click on the purple button to sign in
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f975ccd2-2279-44c0-abf7-65964c188d28" width="150" />
-</p>
-   
-3. Tap the **GitHub** button to access the GitHub login interface
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/11b70000-15ba-4a5c-a431-3de19ce42628" width="150" />
+  <img width="150" alt="githublogin" src="https://github.com/user-attachments/assets/661d9606-5068-4b0e-bfbb-ad9d96ed177a" />
 </p>
 
-4. GitHub credentials are prefilled, click the **Sign In** button
+You will then be brought back to the home chat screen
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/b045fafd-d705-45a6-a854-57604b994a3a" width="150" />
-</p>
-
-5. Navigate back using the back button at the top left corner of the screen
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/b291221f-4f3e-47d9-883b-9433f933a1d3" width="150" />
-</p>
-
-
----
 
 ### Step 3: Select GitHub Repository
 
 1. After linking GitHub, click on **Import Repository** in the chat screen
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/ce9d8121-2fdc-4155-8a65-e4372f629dfc" width="150" />
+  <img width="150" alt="import-repo" src="https://github.com/user-attachments/assets/61462bf4-917e-4f41-ae97-ad38a1fe58b7" />
 </p>
 
-2. Select the first repository from the displayed list, **Repository 1**
+2. Select any repository from the displayed list, for example: **React-native-app**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4ff9789c-5175-483b-96f6-3fe8b6f987db" width="150" />
+  <img width="150" alt="repos" src="https://github.com/user-attachments/assets/790e0d59-815c-4fd7-90bb-3103f508f986" />
 </p>
 
 ---
 
 ### Step 4: Review and Edit Code
 
-1. After selecting a repository, a **sample prompt** is provided in the prototype: tap the **Send button** in the bottom-right
+1. Now that the app has context, you can provide a prompt in the text box at the bottom. An example prompt would be:
+   
+   ```
+   Give me a short for loop in python
+   ```
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/eaca4c91-d7b3-4b72-a65a-408031b0e7e7" width="150" />
+  <img width="150" alt="prompt" src="https://github.com/user-attachments/assets/475372b2-3a31-42fa-aabb-2917f46c2e6b" />
 </p>
 
-2. Tap **Show Full Code** to open the code editing page
+2. Next, you can review the suggested code and its explanations, then click **View Code Editor** to open the code editing page
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/967771e7-e660-4d75-988e-8692944f8b5a" width="150" />
+  <img width="150" alt="prompted" src="https://github.com/user-attachments/assets/b9ed2c4d-c02d-49b5-b1b1-71ce4e1ca2e1" />
 </p>
 
-3. Click **Accept Changes** above the code suggestions highlighted in blue
+
+
+
+3. Click **Accept** to write in the new code suggestions into the file.
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f040cff2-c654-420d-b992-f7f9ac59ad11" width="150" />
+  <img width="150" alt="code-editor" src="https://github.com/user-attachments/assets/ab975be7-3c7a-4e6d-b7ba-24e44f79d798" />
+</p>
+
+After accepting the new changes or editing the text in the file, there will be a M shown beside the filename, indicating the file has new changes saved. Then you will be able to push these changes back to the GitHub repository in the next step. You will also be able to undo and redo, and view the history of changes made.
+
+<p align="center">
+    <img width="200" alt="m" src="https://github.com/user-attachments/assets/e5d0fa3d-d5c5-4dac-89df-9816cc637191" />
 </p>
 
 
@@ -206,34 +197,35 @@ OR
 1. Click the **top-right upload icon**
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a318d52f-f3c6-4c1b-becf-7b1b523e6d7d" width="150" />
+ <img width="200" alt="m" src="https://github.com/user-attachments/assets/821d18dc-e299-431d-aa12-f40a4f89ce4e" />
+
 </p>
 
 2. Select **Push to Main** from the dropdown menu
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b0447861-5401-4fc2-beea-0d2fa27328b1" width="150" />
+  <img width="150" alt="commit" src="https://github.com/user-attachments/assets/4ebb3e1d-3c9a-49e6-9801-d930296922b2" />
 </p>
    
-3. After reviewing changes, tap the **Commit Changes** button at the bottom of the page
+3. Input your commit message, then tap the **Commit Changes** button at the bottom of the page
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b17584a8-8957-4d99-ac56-e24d44f85bf0" width="150" />
+  <img width="150" alt="committing" src="https://github.com/user-attachments/assets/47cf33b1-35fb-4f1a-badb-aa45a57a5dfd" />
 </p>
 
 4. Click **Commit** in the popup dialog
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/f1c62376-2917-4ca2-8b72-bc6b2aa05bcd" width="150" />
+    <img width="300" alt="confirm" src="https://github.com/user-attachments/assets/a4df9b03-d767-4a1d-a756-43cc92c677b3" />
 </p>
 
 5. Your changes will be committed to your repository. Tap **Back to Chat** to return to the chat screen and complete the workflow
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4830429a-3243-490f-ba76-b5381850cc22" width="150" />
+  <img width="150" alt="committed" src="https://github.com/user-attachments/assets/7423ab29-7969-49bc-8f9a-8636add7953e" />
 </p>
 
-Thats it! You've completed the vertical functionality of our prototype.
+Thats it! You've completed the main 2 tasks of our application.
 
 ---
 

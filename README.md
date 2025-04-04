@@ -12,8 +12,9 @@ Try out our app simulator!
 GitGPT is an improvement of ChatGPT on mobile, where we aim to resolve the key pain points using ChatGPT for coding: The lack of context and inability to paste large code blocks or import files.
 
 There are 2 main tasks that our prototype implements:
-    1. Importing a repository for contextual information
-    2. Editing code and pushing back to the repository
+    
+   1. Importing a repository for contextual information
+   2. Editing code and pushing back to the repository
 
 This ReadMe walks through 
 
@@ -21,7 +22,9 @@ This ReadMe walks through
 
 (b) how to effectively navigate the application and use all features provided
 
-If you would like to try the app without downloading on your own device, you can try out online simulator [HERE](https://gitgpt-amber.vercel.app)
+I suggest using the web app simulator as it already lins an OpenAI API key, you can try out the online simulator [HERE](https://gitgpt-amber.vercel.app)
+
+Otherwise you would be required to create your own API key. You can follow the steps below.
 
 ### Contents
 
@@ -58,10 +61,10 @@ Before setting up the project, ensure you have Node installed to use ```npm```, 
 4. Create a file named ```.env``` in the server folder with the following contents:
   
     ```
-    OPENAI_API_KEY=place_your_actual_openai_key_here
+    OPENAI_API_KEY=actual_openai_key_here
     ```
 
-and replace the placeholder with the openai key you obtained in step 1 
+and replace ```actual_openai_key_here``` with the openai key you obtained in step 1 
 
 4. Now in the terminal of the **server** folder run:
 
@@ -102,11 +105,13 @@ You will now be prompted with the local host link for the web version, and also 
 
 # Step by Step App Walkthrough 
 
-### Step 1: Login Process
+### Task 1: Login, Connect GitHub, Import Repository
+
+#### Step 1: Login Process
 
 Now that the app is up and running on either mobile or web, here are steps to navigate the app.
 
-1. Tap the **top-right login button** to enter the login interface
+1. Tap the ```top-right login button``` to enter the login interface
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/3ed3dfa4-26f9-4fe7-866b-38ed160d445f" width="150" />
@@ -124,7 +129,7 @@ Then click ```Sign in```
 
 ---
 
-### Step 2: Connect GitHub Account
+#### Step 2: Connect GitHub Account
 
 1. Connecting to GitHub now can be done in 2 way:
    - (Shorter method) Click the ```GitHub Login``` button in the main chat interface
@@ -141,7 +146,7 @@ Then click ```Sign in```
     <img width="150" alt="integrations" src="https://github.com/user-attachments/assets/9a23c3ee-8b7c-4373-9efd-6369d1b18786" />
 </p>
 
-2. Enter a simple text into the input boxes (ex. username: user, password: 1234) and click on the purple button to sign in
+2. Enter a simple text into the input boxes (ex. username: user, password: 1234) and click on the ```Connect to GitHub``` button to sign in
 
 <p align="center">
   <img width="150" alt="githublogin" src="https://github.com/user-attachments/assets/661d9606-5068-4b0e-bfbb-ad9d96ed177a" />
@@ -150,15 +155,15 @@ Then click ```Sign in```
 You will then be brought back to the home chat screen
 
 
-### Step 3: Select GitHub Repository
+#### Step 3: Select GitHub Repository
 
-1. After linking GitHub, click on **Import Repository** in the chat screen
+1. After linking GitHub, click on ```Import Repository``` in the chat screen
 
 <p align="center">
   <img width="150" alt="import-repo" src="https://github.com/user-attachments/assets/61462bf4-917e-4f41-ae97-ad38a1fe58b7" />
 </p>
 
-2. Select any repository from the displayed list, for example: **React-native-app**
+2. Select any repository from the displayed list, for example: ```react-native-app```
 
 <p align="center">
   <img width="150" alt="repos" src="https://github.com/user-attachments/assets/790e0d59-815c-4fd7-90bb-3103f508f986" />
@@ -166,7 +171,9 @@ You will then be brought back to the home chat screen
 
 ---
 
-### Step 4: Review and Edit Code
+### Task 2: Get AI Code Suggestions, Edit code, Push to Repository
+
+#### Step 4: Review and Edit Code
 
 1. Now that the app has context, you can provide a prompt in the text box at the bottom. An example prompt would be:
    
@@ -178,7 +185,7 @@ You will then be brought back to the home chat screen
   <img width="150" alt="prompt" src="https://github.com/user-attachments/assets/475372b2-3a31-42fa-aabb-2917f46c2e6b" />
 </p>
 
-2. Next, you can review the suggested code and its explanations, then click **View Code Editor** to open the code editing page
+2. Next, you can review the suggested code and its explanations, then click ```View Code Editor``` to open the code editing page
 
 <p align="center">
   <img width="150" alt="prompted" src="https://github.com/user-attachments/assets/b9ed2c4d-c02d-49b5-b1b1-71ce4e1ca2e1" />
@@ -187,7 +194,7 @@ You will then be brought back to the home chat screen
 
 
 
-3. Click **Accept** to write in the new code suggestions into the file.
+3. Click ```Accept``` to write in the new code suggestions into the file.
 
 <p align="center">
   <img width="150" alt="code-editor" src="https://github.com/user-attachments/assets/ab975be7-3c7a-4e6d-b7ba-24e44f79d798" />
@@ -196,34 +203,34 @@ You will then be brought back to the home chat screen
 
 ---
 
-### Step 5: Push Changes to GitHub
+#### Step 5: Push Changes to GitHub
 
-1. Click the **top-right upload icon**
+1. Click the ```top-right upload icon```
 
 <p align="center">
  <img width="200" alt="m" src="https://github.com/user-attachments/assets/821d18dc-e299-431d-aa12-f40a4f89ce4e" />
 
 </p>
 
-2. Select **Push to Main** from the dropdown menu
+2. Select ```Push to Main``` from the dropdown menu
 
 <p align="center">
   <img width="150" alt="commit" src="https://github.com/user-attachments/assets/4ebb3e1d-3c9a-49e6-9801-d930296922b2" />
 </p>
    
-3. Input your commit message, then tap the **Commit Changes** button at the bottom of the page
+3. Input your commit message, then tap the ```Commit Changes``` button at the bottom of the page
 
 <p align="center">
   <img width="150" alt="committing" src="https://github.com/user-attachments/assets/47cf33b1-35fb-4f1a-badb-aa45a57a5dfd" />
 </p>
 
-4. Click **Commit** in the popup dialog
+4. Click ```Commit``` in the popup dialog
 
 <p align="center">
     <img width="300" alt="confirm" src="https://github.com/user-attachments/assets/a4df9b03-d767-4a1d-a756-43cc92c677b3" />
 </p>
 
-5. Your changes will be committed to your repository. Tap **Back to Chat** to return to the chat screen and complete the workflow
+5. Your changes will be committed to your repository. Tap ```Back to Chat``` to return to the chat screen and complete the workflow
 
 <p align="center">
   <img width="150" alt="committed" src="https://github.com/user-attachments/assets/7423ab29-7969-49bc-8f9a-8636add7953e" />
@@ -243,15 +250,15 @@ Thats it! You've completed the 2 main tasks of our application.
 </p>
 
 - Error handling and prevention:
-  - If prompts are sent without network connect
-  - If users try to login with null input boxes
+  - If prompts are sent without network connect, users will be notified of the error and suggested to check their network
+  - If users try to login with null input boxes, it prompts them to input a value
   - History shows any older changes made allowing users to revert back to an older version if errors were made
   - Users are shown a guide to effectively navigate the new code editor screen and inform them of possible actions
 
 
 - System feedback:
     - functionalities not yet implemented (not part of the main 2 tasks) are shown a popup for feedback
-    - After accepting the new changes or editing the text in the file, there will be a M shown beside the filename, indicating the file has new changes saved. Then you will be able to push these changes back to the GitHub repository in the next step. You will also be able to undo and redo, and view the history of changes made.
+    - After accepting the new changes or editing the text in the file, there will be a M shown beside the filename, indicating the file has new changes saved. You will also be able to undo and redo, and view the history of changes made.
 
   
 <p align="center">

@@ -29,6 +29,7 @@ If you would like to try the app without downloading on your own device, you can
 - [Project Setup and API Key](#project-setup-and-api-key)
 - [Running the Project](#running-the-project)
 - [Step-by-Step App Walkthrough](#step-by-step-app-walkthrough)
+- [Additional Features](#additional-features)
 
 ---
 
@@ -192,12 +193,6 @@ You will then be brought back to the home chat screen
   <img width="150" alt="code-editor" src="https://github.com/user-attachments/assets/ab975be7-3c7a-4e6d-b7ba-24e44f79d798" />
 </p>
 
-After accepting the new changes or editing the text in the file, there will be a M shown beside the filename, indicating the file has new changes saved. Then you will be able to push these changes back to the GitHub repository in the next step. You will also be able to undo and redo, and view the history of changes made.
-
-<p align="center">
-    <img width="200" alt="m" src="https://github.com/user-attachments/assets/e5d0fa3d-d5c5-4dac-89df-9816cc637191" />
-</p>
-
 
 ---
 
@@ -236,4 +231,42 @@ After accepting the new changes or editing the text in the file, there will be a
 
 Thats it! You've completed the 2 main tasks of our application.
 
+---
+
+# Additional Features
+
+- Personalization: Users are able to see their own account details and also toggle light mode and dark mode
+
+<p align="center">
+    <img  width="150" alt="account" src="https://github.com/user-attachments/assets/df5dd65a-d429-4d28-8890-68b60ca7f485" />
+    <img width="150" alt="lightmode" src="https://github.com/user-attachments/assets/84771c0d-a951-483b-b55e-18b7de84edfe" />
+</p>
+
+- Error handling and prevention:
+  - If prompts are sent without network connect
+  - If users try to login with null input boxes
+  - History shows any older changes made allowing users to revert back to an older version if errors were made
+  - Users are shown a guide to effectively navigate the new code editor screen and inform them of possible actions
+
+
+- System feedback:
+    - functionalities not yet implemented (not part of the main 2 tasks) are shown a popup for feedback
+    - After accepting the new changes or editing the text in the file, there will be a M shown beside the filename, indicating the file has new changes saved. Then you will be able to push these changes back to the GitHub repository in the next step. You will also be able to undo and redo, and view the history of changes made.
+
+  
+<p align="center">
+    <img margin="10px" width="150" alt="networkerror" src="https://github.com/user-attachments/assets/811cc4ef-ae77-4735-b122-9bb796b72d47" />
+    <img width="150" alt="login-error" src="https://github.com/user-attachments/assets/604c2630-3ad3-4662-b68c-0240e991fdb1" />
+    <img width="300" alt="history" src="https://github.com/user-attachments/assets/1641d006-79c2-4eaa-b840-91d0a4e9e808" />
+</p>
+
+
+<p align="center">
+    <img width="300" alt="guide" src="https://github.com/user-attachments/assets/4d696a08-b402-44a7-8f61-d262d30c3efe" />
+    <img width="300" alt="not-implemented" src="https://github.com/user-attachments/assets/802cd826-8c2c-4c78-9a0c-e0ae745d2903" />
+</p>
+<p align="center">
+        <img width="200" alt="m" src="https://github.com/user-attachments/assets/e5d0fa3d-d5c5-4dac-89df-9816cc637191" />
+
+</p>
 

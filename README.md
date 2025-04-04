@@ -1,6 +1,8 @@
 # GitGPT: Mobile Coding Assistant with GitHub Contextual Integration
 
-Try out our app!
+Built with React Native, OpenAI API, and demo deployed on Vercel.
+
+Try out our app simulator!
 🔗 [Web App Simulator](https://gitgpt-amber.vercel.app)
 
 ![CMPT363-Part4-Team13-Poster](https://github.com/user-attachments/assets/bc64b6a2-cfb5-49f3-b2d6-babd836def5d)
@@ -9,11 +11,17 @@ Try out our app!
 ## Introduction
 GitGPT is an improvement of ChatGPT on mobile, where we aim to resolve the key pain points using ChatGPT for coding: The lack of context and inability to paste large code blocks or import files.
 
+There are 2 main tasks that our prototype implements:
+    1. Importing a repository for contextual information
+    2. Editing code and pushing back to the repository
+
 This ReadMe walks through 
 
 (a) how to clone and run the project on personal devices, and 
 
 (b) how to effectively navigate the application and use all features provided
+
+If you would like to try the app without downloading on your own device, you can try out online simulator [HERE](https://gitgpt-amber.vercel.app)
 
 ### Contents
 
@@ -24,18 +32,19 @@ This ReadMe walks through
 
 ---
 
-### Cloning the repository:
+# Cloning the repository:
 
 First clone the repository in your desired directory, in your terminal run:
-    ```
-    git clone https://github.com/Vancarii/gitgpt.git
-    ```
-Then run this to open the project in vs code:
-    ```
-    code .
-    ```
 
-### Project Setup and API Key:
+    git clone https://github.com/Vancarii/gitgpt.git
+
+Then run this to open the project in vs code:
+
+    code .
+
+# Project Setup and API Key:
+
+Before setting up the project, ensure you have Node installed to use ```npm```, or alternatively you can use ```yarn```
 
 1. Go to OpenAI website and create your own api key
 
@@ -53,13 +62,13 @@ Then run this to open the project in vs code:
 
 and replace the placeholder with the openai key you obtained in step 1 
 
-4. Now in the terminal of the server folder run:
+4. Now in the terminal of the **server** folder run:
 
     ```
     npm install
     ```
 
-5. Navigate back to the root folder of the project and run:
+5. Navigate back to the **root** folder of the project and run:
 
     ```
     npm install
@@ -225,47 +234,6 @@ After accepting the new changes or editing the text in the file, there will be a
   <img width="150" alt="committed" src="https://github.com/user-attachments/assets/7423ab29-7969-49bc-8f9a-8636add7953e" />
 </p>
 
-Thats it! You've completed the main 2 tasks of our application.
+Thats it! You've completed the 2 main tasks of our application.
 
----
-
-## Additional Features
-
-### View Edit History
-- Tap the **History** button at the top toolbar section at any time to review past changes
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d0886344-adff-4ec8-9d51-129984bd087c" width="150" />
-  <img src="https://github.com/user-attachments/assets/4cf9722d-8b1b-4b4e-b9ba-7ab5a52227d0" width="150" />
-</p>
-
-### **Mistake Recovery**
-- Users can **undo an action** to revert accepted changes in the code editor
-- The prototype tracks **changes made**, prompting users to push their updates in the chat screen
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d0886344-adff-4ec8-9d51-129984bd087c" width="150" />
-  <img src="https://github.com/user-attachments/assets/5a0e5d5c-5bb9-4b9e-99fe-2d2d7a7003d3" width="150" />
-</p>
-
-
-### **Account and Session Management**
-- Users can review the **Terms and Privacy Policy** anytime within the login session for **clarity and security**
-- Users can view their chat history at any time within the sidebar window
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/08aa46ba-7ef2-487e-8d07-060e1f3c97b3" width="400" />
-</p>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/1ab59d27-c442-420e-bc0c-a834dd2e31c8" width="150" />
-  <img src="https://github.com/user-attachments/assets/a55258a9-dab6-4c33-a583-4be2a01da9df" width="150" />
-</p>
-
-### Mobile Keyboard Shortcuts
-- Code editing is improved with common keyboard buttons easily accessible
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/d9edd1eb-b1b1-4e13-9ea3-62aaa78e1255" width="150" />
-</p>
 

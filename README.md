@@ -15,7 +15,7 @@ Watch the video walkthrough: [Youtube](https://youtu.be/29bj9o4lrWU?si=0b3hvKNGT
 ## Introduction
 GitGPT is an improvement of ChatGPT on mobile, where we aim to resolve the key pain points using ChatGPT for coding: The lack of context and inability to paste large code blocks or import files.
 
-There are 2 main tasks that our prototype implements:
+There are **2 main tasks** that our prototype implements:
     
    1. Importing a repository for contextual information
    2. Editing code and pushing back to the repository
@@ -26,9 +26,7 @@ This ReadMe walks through
 
 (b) how to effectively navigate the application and use all features provided
 
-I suggest using the web app simulator as it already lins an OpenAI API key, you can try out the online simulator [HERE](https://gitgpt-amber.vercel.app)
-
-Otherwise you would be required to create your own API key. You can follow the steps below.
+I suggest using the [web app simulator](https://gitgpt-amber.vercel.app) as it already integrates an OpenAI API key, otherwise you would be required to create your own API key. You can follow the steps below.
 
 ### Contents
 

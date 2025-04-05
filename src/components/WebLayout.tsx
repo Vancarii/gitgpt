@@ -58,7 +58,9 @@ const WebLayout: React.FC<WebLayoutProps> = ({ children }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.linkButton}
-              onPress={() => openLink("https://youtube.com/your-demo-link")}
+              onPress={() =>
+                openLink("https://www.youtube.com/watch?v=29bj9o4lrWU")
+              }
             >
               <Icon
                 name="video"
@@ -125,11 +127,11 @@ const WebLayout: React.FC<WebLayoutProps> = ({ children }) => {
             </View>
           </View>
 
-          <CollapsibleSection title="README">
+          {/* <CollapsibleSection title="README">
             <Text style={styles.paragraph}></Text>
-          </CollapsibleSection>
+          </CollapsibleSection> */}
 
-          <CollapsibleSection title="Setup Instructions">
+          {/* <CollapsibleSection title="Setup Instructions">
             <Text style={styles.paragraph}>
               1. Clone the repository:{"\n\n"}
               <Text style={styles.code}>
@@ -158,12 +160,12 @@ const WebLayout: React.FC<WebLayoutProps> = ({ children }) => {
                 version with Expo Go
               </Text>
             </Text>
-          </CollapsibleSection>
+          </CollapsibleSection> */}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Technology Stack</Text>
             <Text style={styles.paragraph}>
-              • React Native / Expo{"\n"}• OpenAI API{"\n"}• Node.js{"\n"}
+              • React Native / Expo Go{"\n"}• OpenAI API{"\n"}• Node.js{"\n"}
             </Text>
           </View>
 

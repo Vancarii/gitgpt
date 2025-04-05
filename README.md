@@ -1,5 +1,7 @@
 # GitGPT: Mobile Coding Assistant with GitHub Contextual Integration
 
+**Team 13 - Yecheng Wang, Tianxi Huang, Yvan Zhang, Albert Zhang**
+
 Built with React Native, OpenAI API, and demo deployed on Vercel.
 
 Try out our app simulator!

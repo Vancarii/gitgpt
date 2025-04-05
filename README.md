@@ -5,6 +5,8 @@ Built with React Native, OpenAI API, and demo deployed on Vercel.
 Try out our app simulator!
 🔗 [Web App Simulator](https://gitgpt-amber.vercel.app)
 
+Watch the video walkthrough: [Youtube](https://youtu.be/29bj9o4lrWU?si=0b3hvKNGT1e-QVAl)
+
 ![CMPT363-Part4-Team13-Poster](https://github.com/user-attachments/assets/bc64b6a2-cfb5-49f3-b2d6-babd836def5d)
 
 
